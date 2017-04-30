@@ -49,4 +49,7 @@ docs/_build/
 *~
 *.ipynb*
 .idea
-test_credentials.json
+dev_credentials.json
+credentials.json
+credentials.json
+*.key

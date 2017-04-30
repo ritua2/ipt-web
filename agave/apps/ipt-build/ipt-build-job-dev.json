@@ -1,0 +1,14 @@
+{
+  "name": "ipt-build-dev-jfs",
+  "appId": "ipt-build-dev-0.1.0",
+  "inputs": {
+    "driver": "agave://dev.ipt.cloud.storage//data/test.txt"
+  },
+  "parameters": {
+    "command": "ls -l",
+    "output": "foo"
+  },
+  "archive": true,
+  "archiveSystem": "dev.ipt.cloud.storage"
+}
+

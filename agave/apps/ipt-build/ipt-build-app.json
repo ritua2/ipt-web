@@ -1,0 +1,137 @@
+{
+  "version": "0.1.0",
+  "helpURI": "ipt.tacc.utexas.edu",
+  "label": "Compile IPT output",
+  "defaultNodeCount": 1,
+  "defaultMaxRunTime": "01:00:00",
+  "shortDescription": "Compile IPT generated source code.",
+  "longDescription": "Compile IPT generated source code.",
+  "executionSystem": "docker.tacc.utexas.edu",
+  "executionType": "CLI",
+  "parallelism": "SERIAL",
+  "deploymentPath": "apps/ipt-build",
+  "deploymentSystem": "ipt.cloud.storage",
+  "templatePath": "ipt-build-wrapper.sh",
+  "testPath": "test/test.sh",
+  "tags": [
+    "build",
+    "compile",
+    "ipt"
+  ],
+  "ontology": [],
+  "modules": [],
+  "inputs": [
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "argument": "main IPT generated source file."
+      },
+      "semantics": {
+        "ontology": [],
+        "minCardinality": 1,
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true
+      },
+      "id": "driver"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Any additional files required for compilation."
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": -1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": false
+      },
+      "id": "supplemental-files"
+    }
+  ],
+  "parameters": [
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "The compiler command"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+        "default": "mpicc"
+      },
+      "id": "command"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "file name to generate from compilation"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+        "default": "a.out"
+      },
+      "id": "output"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "additional arg string to pass to the compiler"
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "string"
+      },
+      "id": "args"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "string of modules to load"
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "string"
+      },
+      "id": "modules"
+    }
+  ],
+  "checkpointable": false,
+  "name": "ipt-build"
+}

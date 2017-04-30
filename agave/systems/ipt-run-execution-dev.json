@@ -1,0 +1,34 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO"
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "dev.ipt.run.execute",
+  "name": "IPT run execution system -- DEV",
+  "status": "UP",
+  "description": "DEV execution system for running IPT-generated parallel codes.",
+  "site": "ipt.tacc.utexas.edu",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "129.114.19.84",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "auth": {
+        "username":"",
+        "publicKey": "",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+    }
+  }
+}

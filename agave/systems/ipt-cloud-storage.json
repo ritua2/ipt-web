@@ -1,0 +1,21 @@
+{
+  "type": "STORAGE",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "ipt-storage.tacc.utexas.edu",
+    "rootDir": "/data",
+    "port": 22,
+    "auth": {
+        "username":"",
+        "publicKey": "",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+    }
+  },
+  "id": "ipt.cloud.storage",
+  "name": "IPT Cloud Storage",
+  "status": "UP",
+  "description": "Cloud storage for IPT workspace.",
+  "site": "ipt.tacc.utexas.edu"
+}

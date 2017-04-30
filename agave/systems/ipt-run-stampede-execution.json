@@ -1,0 +1,155 @@
+{
+    "id" : "ipt.run.stampede",
+    "name" : "Stampede SLURM Execution Host",
+    "status" : "UP",
+    "type" : "EXECUTION",
+    "description" : "The TACC Stampede system is a 10 PFLOPS (PF) Dell Linux Cluster based on 6400+ Dell PowerEdge server nodes, each outfitted with 2 Intel Xeon E5 (Sandy Bridge) processors and an Intel Xeon Phi Coprocessor (MIC Architecture). The aggregate peak performance of the Xeon E5 processors is 2+PF, while the Xeon Phi processors deliver an additional aggregate peak performance of 7+PF. The system also includes a set of login nodes, large-memory nodes, graphics nodes (for both remote visualization and computation), and dual-coprocessor nodes. Additional nodes (not directly accessible to users) provide management and file system services.",
+    "site" : "ipt.tacc.utexas.edu",
+    "public" : true,
+    "executionType" : "HPC",
+    "scheduler" : "SLURM",
+    "environment" : null,
+    "startupScript" : "./bashrc",
+    "maxSystemJobs" : 50,
+    "maxSystemJobsPerUser" : 4,
+    "workDir" : "/work/00849/<iptuser>/ipt-work/",
+    "scratchDir" : "/scratch/00849/<iptuser>/ipt-scratch/",
+    "queues" : [
+      {
+        "name" : "normal",
+        "default" : true,
+        "maxJobs" : 50,
+        "maxUserJobs" : 10,
+        "maxNodes" : 256,
+        "maxProcessorsPerNode" : 4096,
+        "maxRequestedTime" : "48:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "development",
+        "default" : false,
+        "maxJobs" : 1,
+        "maxUserJobs" : 1,
+        "maxNodes" : 16,
+        "maxProcessorsPerNode" : 256,
+        "maxRequestedTime" : "02:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "largemem",
+        "default" : false,
+        "maxJobs" : 4,
+        "maxUserJobs" : 1,
+        "maxNodes" : 4,
+        "maxProcessorsPerNode" : 64,
+        "maxRequestedTime" : "48:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "serial",
+        "default" : false,
+        "maxJobs" : 8,
+        "maxUserJobs" : 2,
+        "maxNodes" : 1,
+        "maxProcessorsPerNode" : 16,
+        "maxRequestedTime" : "12:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "large",
+        "default" : false,
+        "maxJobs" : 50,
+        "maxUserJobs" : 5,
+        "maxNodes" : 1024,
+        "maxProcessorsPerNode" : 16384,
+        "maxRequestedTime" : "24:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "normal-mic",
+        "default" : false,
+        "maxJobs" : 50,
+        "maxUserJobs" : 10,
+        "maxNodes" : 256,
+        "maxProcessorsPerNode" : 4096,
+        "maxRequestedTime" : "48:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "normal-2mic",
+        "default" : false,
+        "maxJobs" : 50,
+        "maxUserJobs" : 10,
+        "maxNodes" : 128,
+        "maxProcessorsPerNode" : 2048,
+        "maxRequestedTime" : "24:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "gpu",
+        "default" : false,
+        "maxJobs" : 50,
+        "maxUserJobs" : 10,
+        "maxNodes" : 32,
+        "maxProcessorsPerNode" : 512,
+        "maxRequestedTime" : "24:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "gpudev",
+        "default" : false,
+        "maxJobs" : 5,
+        "maxUserJobs" : 1,
+        "maxNodes" : 4,
+        "maxProcessorsPerNode" : 64,
+        "maxRequestedTime" : "04:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "vis",
+        "default" : false,
+        "maxJobs" : 50,
+        "maxUserJobs" : 10,
+        "maxNodes" : 32,
+        "maxProcessorsPerNode" : 128,
+        "maxRequestedTime" : "08:00:00",
+        "maxMemoryPerNode" : "32GB"
+      },
+      {
+        "name" : "visdev",
+        "default" : false,
+        "maxJobs" : 5,
+        "maxUserJobs" : 1,
+        "maxNodes" : 4,
+        "maxProcessorsPerNode" : 64,
+        "maxRequestedTime" : "04:00:00",
+        "maxMemoryPerNode" : "32GB"
+      }
+    ],
+    "login" : {
+      "host" : "stampede.tacc.utexas.edu",
+      "port" : 22,
+      "protocol" : "SSH",
+      "scratchDir": "/work/00849/<iptuser>/ipt-scratch/",
+      "workDir": "/work/00849/<iptuser>/ipt-work/",
+      "auth" : {
+        "username":"",
+        "publicKey": "",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+      }
+    },
+    "storage" : {
+      "host" : "stampede.tacc.utexas.edu",
+      "port" : 22,
+      "protocol" : "SFTP",
+      "rootDir" : "/",
+      "homeDir" : "/work/00849/<iptuser>/ipt-scratch/",
+      "auth" : {
+        "username":"",
+        "publicKey": "",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+      }
+    }
+}

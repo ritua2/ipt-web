@@ -1,0 +1,21 @@
+{
+  "type": "STORAGE",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "129.114.19.85",
+    "rootDir": "/data/ipt",
+    "port": 22,
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "root",
+      "publicKey": "",
+      "privateKey": ""
+    }
+  },
+  "id": "dev.ipt.cloud.storage",
+  "name": "IPT Cloud Storage -- DEV",
+  "status": "UP",
+  "description": "DEV Cloud storage for IPT workspace.",
+  "site": "ipt.tacc.utexas.edu"
+}

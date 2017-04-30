@@ -1,0 +1,34 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO"
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "ipt.build.stampede",
+  "name": "IPT Build Execution - Stampede",
+  "status": "UP",
+  "description": "Stampede-based execution system for compiling IPT-generated source codes.",
+  "site": "ipt.tacc.utexas.edu",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "login.stampede.tacc.utexas.edu",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "auth": {
+        "username":"",
+        "publicKey": "",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+    }
+  }
+}

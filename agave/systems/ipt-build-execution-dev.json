@@ -1,0 +1,43 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "129.114.19.84",
+    "port": 22,
+    "rootDir":"/data/ipt/jobs",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "root",
+      "publicKey": "",
+      "privateKey": ""
+    }
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "dev.ipt.build.execute",
+  "name": "IPT build execution system -- DEV",
+  "status": "UP",
+  "description": "DEV execution system for compiling IPT-generated source codes.",
+  "site": "ipt.tacc.utexas.edu",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "129.114.19.84",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "root",
+      "publicKey": "",
+      "privateKey": ""
+    }
+  }
+}

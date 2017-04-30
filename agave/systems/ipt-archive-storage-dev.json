@@ -1,0 +1,24 @@
+{
+  "id": "dev.ipt.archive.storage",
+  "name": "IPT Archive Storage -- DEV",
+  "status": "UP",
+  "type": "STORAGE",
+  "description": "The DEV storage host for IPT archive data.",
+  "site": "tacc.utexas.edu",
+  "public": true,
+  "default": true,
+  "storage": {
+    "host": "129.114.19.85",
+    "port": 22,
+    "protocol": "SFTP",
+    "rootDir": "/data/corral-repl/tacc/IPT/shared",
+    "homeDir": "/",
+    "publicAppsDir": "/applications",
+    "auth": {
+      "username": "root",
+      "publicKey": "",
+      "privateKey": "",
+      "type": "SSHKEYS"
+    }
+  }
+}

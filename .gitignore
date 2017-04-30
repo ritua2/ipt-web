@@ -51,5 +51,5 @@ docs/_build/
 .idea
 dev_credentials.json
 credentials.json
-credentials.json
+*_credentials.json
 *.key

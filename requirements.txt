@@ -1,0 +1,2 @@
+agavepy==0.4.0
+Django==1.11.2

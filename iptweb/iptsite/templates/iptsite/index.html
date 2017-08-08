@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Interactive Parallelization Tool</title>
+			<!-- Latest compiled and minified CSS -->
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+			<!-- Optional theme -->
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+			<!-- Latest compiled and minified JavaScript -->
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<div class="container">
+  			<div class="jumbotron">
+    			<h1><center>Interactive Parallelization Tool</center></h1>      
+  			</div>     
+		</div>
+		<!--Tabs-->
+		<div class="container">
+		 	<ul class="nav nav-tabs">
+		    	<li class="active"><a data-toggle="tab" href="compile">Compile</a></li>
+			    <li><a data-toggle="tab" href="run">Run</a></li>
+			    <li><a data-toggle="tab" href="history">Job History</a></li>
+			    <li><a data-toggle="tab" href="help">Help</a></li>
+		  	</ul>
+
+		  	<div class="tab-content">
+		  		<!-- Compile Tab -->
+		    	<div id="compile" class="tab-pane fade in active">
+		    		<div class="page-header">
+  						<h1>Launching a Compile Job</h1>
+					</div>
+			    	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+					<div class="container">
+						<form action="#">
+							<div class="form-group">
+						    	<div class="form-group">
+								    <label for="command">Command:</label>
+								    <input type="command" class="form-control" id="command" placeholder="Enter $command" name="command">
+						    	</div>
+						    	<div class="form-group">
+								    <label for="driver">Driver:</label>
+								    <input type="driver" class="form-control" id="driver" name="driver">
+						    	</div>
+						    	<div class="form-group">
+								    <label for="outfiles">Output File(s):</label>
+								    <input type="outfiles" class="form-control" id="outfiles" placeholder="a.out" name="outputfiles">
+						    	</div>
+						    	<div class="form-group">
+								    <label for="addfiles">Additional Files:</label>
+								    <input type="addfiles" class="form-control" id="addfiles" placeholder="Add additional files or folders" name="additionalfiles">
+						    	</div>
+								<div>
+								    <span id="fileselector">
+								        <label class="btn btn-default" for="upload-file-selector">
+								            <input id="upload-file-selector" type="file">
+								            <i class="fa_icon icon-upload-alt margin-correction"></i>Upload
+								        </label>
+								    </span>
+								</div>
+						    	<div class="form-group">
+								    <label for="commargs">Command Args:</label>
+								    <input type="commargs" class="form-control" id="commargs" placeholder="$args" name="commargs">
+						    	</div>
+						    	<button type="submit" class="btn btn-default">Compile Code</button>
+					  		</div>
+					  	</form>
+					</div>
+		    	</div>
+		    	<!-- Run Tab -->
+		    	<div id="run" class="tab-pane fade">
+		      		<div class="page-header">
+  						<h1>Launching a Run Job</h1>
+					</div>
+		      		<p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+					<div class="container">
+						<form action="#">
+							<div class="form-group">
+						    	<div>
+								    <label for="command">Command:</label>
+								    <input type="command" class="form-control" id="command" placeholder="Enter ibrun or ./nameofexecutable" name="command">
+						    	</div>
+						    	<div>
+								    <label for="jobq">Job Queue:</label>
+								    <input type="jobq" class="form-control" id="jobq" placeholder="Enter the name of the queue. i.e. normal, dev, vis, etc." name="jobq">
+						    	</div>
+						    	<div>
+							      	<label for="sel1">Select number of cores (select one):</label>
+							      	<select class="form-control" id="sel1">
+							        	<option>1</option>
+							        	<option>2</option>
+							        	<option>3</option>
+							        	<option>4</option>
+							        	<option>5</option>
+							        	<option>6</option>
+							        	<option>7</option>
+							        	<option>8</option>
+							        	<option>9</option>
+							        	<option>10</option>
+							        	<option>11</option>
+							        	<option>12</option>							        						
+							        	<option>13</option>
+							        	<option>14</option>
+							        	<option>15</option>
+							        	<option>16</option>							        		        	
+							      	</select>
+						    	</div>
+						    	<div>
+								    <label for="numnodes">Number of Nodes:</label>
+								    <input type="numnodes" class="form-control" id="numnodes" placeholder="Enter number of nodes. if OpenMP or CUDA: Enter 1, if MPI or Hybrid: You may enter 1+" name="numnodes">
+						    	</div>
+						    	<div>
+								    <label for="estrun">Estimated Job Runtime:</label>
+								    <input type="estrun" class="form-control" id="estrun" placeholder="Enter Hours:Minutes:Seconds" name="estrun">
+						    	</div>
+						    	<div>
+								    <label for="allocnum">Allocation Number:</label>
+								    <input type="allocnum" class="form-control" id="allocnum" placeholder="Enter allocation number if estimated job runtime is greater than half hour" name="allocnum">
+						    	</div>
+						    	<div>
+								    <label for="bin">Binary:</label>
+								    <input type="bin" class="form-control" id="bin" placeholder="$args" name="bin">
+						    	</div>					    						    	
+						    	<div>
+								    <label for="rcommargs">Command Args:</label>
+								    <input type="rcommargs" class="form-control" id="rcommargs" placeholder="$args" name="rcommargs">
+						    	</div>				    	
+						    	<button type="submit" class="btn btn-default">Launch Run Job</button>
+							</div>			  	
+					  	</form>
+					</div>
+		    	</div>
+		    	<div id="history" class="tab-pane fade">
+		    		<div class="page-header">
+  						<h1>Your Job History</h1>
+					</div>
+		    		<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+		    		<table>
+		    			<tr>
+			    			<th>Type</th>
+			    			<th>ID</th>
+			    			<th>Name</th>
+			    			<th>Status</th>
+			    			<th>Start</th>
+			    			<th>End</th>
+			    			<th>Output Directory</th>
+			    		</tr>
+			    		{% for job in jobs %}
+			    		<tr>
+			    			<td>{{ job.type }}</td>
+			    			<td><{{ job.id }}/td>
+			    			<td></td>
+			    			<td></td>	
+			    			<td></td>
+			    			<td></td>
+			    			<td></td>			    					    		
+			    		</tr>
+			    		{% endfor %}	
+		    		</table>
+		    	</div>
+		    	<!-- Help Tab -->
+		    	<div id="help" class="tab-pane fade">
+		    		<h1>Help</h1>
+					<!--Section header-->
+					<h3>Getting Started with IPT?</h3>
+					<!--Links-->
+					<h4><a href="https://diagrid.org/resources/ipt/about" target="_blank" alt="Interactive Parallelization Tool (IPT)">Interactive Parallelization Tool (IPT)</a></h4>
+					<p>"Interactive Parallelization Tool (IPT)  is a prototype of a high-level tool for developing parallel applications. IPT can transform serial applications into multiple parallel variants using MPI, OpenMP, CUDA, and Hybrid Programming models."</p>
+					<h4><a href="http://dl.acm.org/citation.cfm?id=2616558" target="_blank" alt="A Tool for Interactive Parallelization">A Tool for Interactive Parallelization</a></h4>
+					<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
+
+					<!--Section header-->
+					<h3>Want to Learn More?</h3>
+					<!--Links-->
+					<h4><a href="#" target="_blank" alt="sample">Sample Code</a></h4>
+					<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
+					<h4><a href="#" target="_blank" alt="sample">Sample Code</a></h4>
+					<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
+					<h4><a href="https://www.youtube.com/watch?v=HvlA4pnfFjE" target="_blank" alt="Video demonstration of how to use Interactive Parallelization Tool - Parallelizing Molecular Dynamics with MPI">Interactive Parallelization Tool - Parallelizing Molecular Dynamics with MPI</a></h4>
+					<p>This demo utilizes the interactive parallelization tool developed at TACC to pararallelize the Molecular Dynamics code. The beta version of this code is available on Diagrid.</p>
+					<h4><a href="https://www.youtube.com/watch?v=L4a19kF6q48" target="_blank" alt="Video demonstration of how to use The Interactive Parallelization Tool - Parallelizing the FFT algorithm with OpenMP">The Interactive Parallelization Tool - Parallelizing the FFT algorithm with OpenMP</a></h4>
+					<p>A brief walk-through on how to use this tool to transform a sequential program into a parallel one through a command line interface. In this demonstration, we will be parallelizing the Fast Fourier Transform Algorithm with OpenMP.</p>
+		    	</div>
+		  	</div>
+		</div>
+
+
+	</body>
+</html>

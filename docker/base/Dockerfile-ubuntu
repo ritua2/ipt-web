@@ -1,7 +1,10 @@
-# This Dockerfile will build a base image starting with ubuntu that contains Boost, ROSE and IPT.
+# Image: jstubbs/ipt-ubuntu
+# Description: This Dockerfile will build a base image starting with ubuntu that contains Boost, ROSE and IPT. It
+# assumes there is a folder, ipt, in the current working directory with all necessary IPT program files. It copies
+# these files to the /ipt directory in the container.
 
 FROM ubuntu:14.04
-MAINTAINER Alex Marginean "alexandru.marginean.13@ucl.ac.uk"
+MAINTAINER Joe Stubbs "jstubbs@tacc.utexas.edu"
 
 #install the requirements for building ROSE
 RUN apt-get update && apt-get install -y git wget gcc-4.8 g++-4.8 gfortran-4.8 autoconf automake libtool flex bison doxygen ghostscript graphviz texlive make vim libgcrypt11-dev libffi-dev
@@ -79,8 +82,11 @@ RUN ls
 
 
 ENV JAVA_HOME /usr/lib/jdk1.8.0_25
-ENV LD_LIBRARY_PATH /home/ROSE/BoostInstallTree/lib:/usr/lib/jdk1.8.0_25/jre/lib/amd64/server:
+ENV LD_LIBRARY_PATH /home/ROSE/BoostInstallTree/lib:/usr/lib/jdk1.8.0_25/jre/lib/amd64/server:/home/ROSE/RoseInstallTree/lib
 
 RUN cp /home/ROSE/BuildFolder/RoseCompileTree/rose_config.h /home/ROSE/RoseInstallTree/include/rose
 
 RUN apt-get update && apt-get install -y gdb gitk
+
+# copy the IPT program files
+COPY ipt /ipt

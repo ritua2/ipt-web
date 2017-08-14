@@ -2,33 +2,56 @@
 
 {% block activetab %}
 <div class="container">
-  <ul class="nav nav-tabs">
-	<li><a data-toggle="tab" href="terminal">Terminal</a></li>
-	<li><a data-toggle="tab" href="compile">Compile</a></li>
-    <li><a data-toggle="tab" href="run">Run</a></li>
-    <li><a data-toggle="tab" href="history">Job History</a></li>
-    <li class="active"><a data-toggle="tab" href="help">Help</a></li>
-{% endblock %}
+    <ul class="nav nav-tabs">
+        <li><a data-toggle="tab" href="terminal">Terminal</a></li>
+        <li><a data-toggle="tab" href="compile">Compile</a></li>
+        <li><a data-toggle="tab" href="run">Run</a></li>
+        <li><a data-toggle="tab" href="history">Job History</a></li>
+        <li class="active"><a data-toggle="tab" href="help">Help</a></li>
+        {% endblock %}
 
-{% block body %}
- 	<!-- Help Tab -->
-	<!--Section header-->
-	<h2>Just Getting Started with IPT?</h2>
-	<!--Links-->
-	<h4><a href="https://diagrid.org/resources/ipt/about" target="_blank" alt="Interactive Parallelization Tool (IPT)">Interactive Parallelization Tool (IPT)</a></h4>
-	<p>"Interactive Parallelization Tool (IPT)  is a prototype of a high-level tool for developing parallel applications. IPT can transform serial applications into multiple parallel variants using MPI, OpenMP, CUDA, and Hybrid Programming models."</p>
-	<h4><a href="http://dl.acm.org/citation.cfm?id=2616558" target="_blank" alt="A Tool for Interactive Parallelization">A Tool for Interactive Parallelization</a></h4>
-	<p>"<i>Tell me, I'll forget, Show me, I may remember, Involve me, I'll understand.</i> - Confucius. This proverb describes the essence of our paper and the motivation behind the development of the Interactive Parallelization Tool (IPT) that can transform serial applications into multiple parallel variants."</p>
+        {% block body %}
+        <!-- Help Tab -->
+        <!--Section header-->
+        <h2>Just Getting Started with IPT?</h2>
+        <!--Links-->
+        <h4><a href="https://diagrid.org/resources/ipt/about" target="_blank"
+               alt="Interactive Parallelization Tool (IPT)">Interactive Parallelization Tool (IPT)</a></h4>
 
-	<!--Section header-->
-	<h2>Want to Learn More?</h2>
-	<!--Links-->
-	<h4><a href="help/iptsite/supportdocs/Tutorial_Files.zip" target="_blank" alt="Tutorial Files for IPT">Tutorial Files for IPT</a></h4>
-	<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
-	<h4><a href="help/iptsite/supportdocs/User_Guide_1.0.pdf" target="_blank" alt="IPT user guide">IPT User Guide</a></h4>
-	<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
-	<h4><a href="https://www.youtube.com/watch?v=HvlA4pnfFjE" target="_blank" alt="Video demonstration of how to use Interactive Parallelization Tool - Parallelizing Molecular Dynamics with MPI">Interactive Parallelization Tool - Parallelizing Molecular Dynamics with MPI</a></h4>
-	<p>This demo utilizes the interactive parallelization tool developed at TACC to pararallelize the Molecular Dynamics code. The beta version of this code is available on Diagrid.</p>
-	<h4><a href="https://www.youtube.com/watch?v=L4a19kF6q48" target="_blank" alt="Video demonstration of how to use The Interactive Parallelization Tool - Parallelizing the FFT algorithm with OpenMP">The Interactive Parallelization Tool - Parallelizing the FFT algorithm with OpenMP</a></h4>
-	<p>A brief walk-through on how to use this tool to transform a sequential program into a parallel one through a command line interface. In this demonstration, we will be parallelizing the Fast Fourier Transform Algorithm with OpenMP.</p>
-{% endblock %}
+        <p>"Interactive Parallelization Tool (IPT) is a prototype of a high-level tool for developing parallel
+            applications. IPT can transform serial applications into multiple parallel variants using MPI, OpenMP, CUDA,
+            and Hybrid Programming models."</p>
+        <h4><a href="http://dl.acm.org/citation.cfm?id=2616558" target="_blank"
+               alt="A Tool for Interactive Parallelization">A Tool for Interactive Parallelization</a></h4>
+
+        <p>"<i>Tell me, I'll forget, Show me, I may remember, Involve me, I'll understand.</i> - Confucius. This proverb
+            describes the essence of our paper and the motivation behind the development of the Interactive
+            Parallelization Tool (IPT) that can transform serial applications into multiple parallel variants."</p>
+
+        <!--Section header-->
+        <h2>Want to Learn More?</h2>
+        <!--Links-->
+        <h4><a href="help/iptsite/supportdocs/Tutorial_Files.zip" target="_blank" alt="Tutorial Files for IPT">Tutorial
+            Files for IPT</a></h4>
+
+        <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+            dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
+        <h4><a href="help/iptsite/supportdocs/User_Guide_1.0.pdf" target="_blank" alt="IPT user guide">IPT User
+            Guide</a></h4>
+
+        <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+            dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.</p>
+        <h4><a href="https://www.youtube.com/watch?v=HvlA4pnfFjE" target="_blank"
+               alt="Video demonstration of how to use Interactive Parallelization Tool - Parallelizing Molecular Dynamics with MPI">Interactive
+            Parallelization Tool - Parallelizing Molecular Dynamics with MPI</a></h4>
+
+        <p>This demo utilizes the interactive parallelization tool developed at TACC to pararallelize the Molecular
+            Dynamics code. The beta version of this code is available on Diagrid.</p>
+        <h4><a href="https://www.youtube.com/watch?v=L4a19kF6q48" target="_blank"
+               alt="Video demonstration of how to use The Interactive Parallelization Tool - Parallelizing the FFT algorithm with OpenMP">The
+            Interactive Parallelization Tool - Parallelizing the FFT algorithm with OpenMP</a></h4>
+
+        <p>A brief walk-through on how to use this tool to transform a sequential program into a parallel one through a
+            command line interface. In this demonstration, we will be parallelizing the Fast Fourier Transform Algorithm
+            with OpenMP.</p>
+        {% endblock %}

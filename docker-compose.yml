@@ -2,7 +2,6 @@
 ---
 
 nginx:
-#    image: jstubbs/ipt-nginx
     image: nginx
     volumes:
         - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -17,3 +16,7 @@ django:
     hostname: ipt-web.tacc.utexas.edu
     ports:
         - "8000:8000"
+    environment:
+        "AGAVE_CLIENT_KEY": "0EbNE3EIss50ffopFR_8djPMYfIa"
+        "AGAVE_CLIENT_SECRET":
+        "AGAVE_BASE_URL": "https://api.tacc.utexas.edu"

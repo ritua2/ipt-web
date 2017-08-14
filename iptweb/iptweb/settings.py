@@ -25,7 +25,7 @@ SECRET_KEY = 'mpdl-&ye!5y&(ud*ci#r#(02h1j8mx$1-tv9erf!y*e!rs9h#@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ipt-web.tacc.utexas.edu']
 
 # Application definition
 

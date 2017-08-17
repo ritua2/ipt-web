@@ -8,7 +8,7 @@
   "public": true,
   "default": true,
   "storage": {
-    "host": "129.114.19.85",
+    "host": "129.114.17.146",
     "port": 22,
     "protocol": "SFTP",
     "rootDir": "/data/corral-repl/tacc/IPT/shared",

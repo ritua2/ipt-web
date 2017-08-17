@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 # from django.contrib.auth.decorators import login_required
 
+from models import TerminalMetadata, IPTError, IPTModelError
 
 def check_for_tokens(request):
     access_token = request.session.get("access_token")
@@ -14,8 +15,21 @@ def check_for_tokens(request):
         return True
     return False
 
+def check_for_terminal(request):
+    """ Check to determine if a user has a terminal session submitted and submit one if not. This
+    method should only be called once the user has logged in and has tokens in their session.
+    """
+    try:
+        m = TerminalMetadata(request.session.get('user'))
+    except IPTModelError as e:
+        # todo - logging/exception handling
+        raise e
+    if m.value['status'] == m.pending_status:
+        # todo - execute abaco worker to launch a terminal.
+        raise IPTError("Terminal execution not implemented yet.")
 
-# Create your views here.
+
+# VIEWS
 
 def history(request):
     """
@@ -166,6 +180,8 @@ def login(request):
     # and just redirect them to e.g. compile page, if so.
     # LOGIN_REDIRECT_URL = '/compile' # means compile view
     if check_for_tokens(request):
+        # if they have already logged in, let's also check whether their terminal has been submitted:
+        check_for_terminal()
         return redirect(reverse("terminal"))
 
     if request.method == 'POST':
@@ -194,6 +210,7 @@ def login(request):
             'refresh_token']  # actual access token only lasts 4 hours, when expired -> token_expires
         token_exp = ag.token.token_info['expires_at']
 
+        request.session['username'] = username
         request.session['access_token'] = access_token
         request.session['refresh_token'] = refresh_token
         return redirect(reverse("terminal"))

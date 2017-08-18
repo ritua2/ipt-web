@@ -19,10 +19,20 @@
         <!-- This particular block template is only for a tab header.
         This block can be modified or removed completely, just be sure to remove the
         opening and closing "headersum" blocks.  -->
-        <h4>Please, stand by as our Terminal page is under construction. Thank you!</h4>
-        {% endblock %}
-        <!-- This block is a continuation of the opening "body" block, its closing block is below.
-        You can place testing code here. -->
+        <h4>Our Terminal page is under construction. We appreciate your patience!</h4>
 
+        {% if error %}
+        <div class="error"> There was an error: {{ error }}</div>
+        {% endif %}
+
+        {% if msg %}
+        <div> {{ msg }}</div>
+        {% endif %}
+
+        {% if url %}
+        <iframe src="{{ url }}"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+        {% endif %}
+
+        {% endblock %}
 
         {% endblock %}

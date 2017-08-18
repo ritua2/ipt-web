@@ -4,8 +4,7 @@ from agavepy.agave import Agave
 # pull in python class
 
 from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.decorators import login_required
+import requests
 
 from models import TerminalMetadata, IPTError, IPTModelError
 
@@ -19,14 +18,39 @@ def check_for_terminal(request):
     """ Check to determine if a user has a terminal session submitted and submit one if not. This
     method should only be called once the user has logged in and has tokens in their session.
     """
-    try:
-        m = TerminalMetadata(request.session.get('user'))
-    except IPTModelError as e:
-        # todo - logging/exception handling
-        raise e
+    ag = get_agave_client_session(request)
+    m = TerminalMetadata(request.session.get('username'), ag)
     if m.value['status'] == m.pending_status:
         # todo - execute abaco worker to launch a terminal.
-        raise IPTError("Terminal execution not implemented yet.")
+        pass
+    return m.value
+
+def get_agave_client(username, password):
+    client_key = os.environ.get('AGAVE_CLIENT_KEY')
+    client_secret = os.environ.get('AGAVE_CLIENT_SECRET')
+    base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
+    if not client_key or not client_secret:
+        raise Exception("Missing OAuth client credentials.")
+    return Agave(api_server=base_url, username=username, password=password, client_name="ipt", api_key=client_key,
+                 api_secret=client_secret)
+
+def get_agave_client_tokens(access_token, refresh_token):
+    client_key = os.environ.get('AGAVE_CLIENT_KEY')
+    client_secret = os.environ.get('AGAVE_CLIENT_SECRET')
+    base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
+    if not client_key or not client_secret:
+        raise Exception("Missing OAuth client credentials.")
+    return Agave(api_server=base_url, token=access_token, refresh_token=refresh_token, client_name="ipt",
+                 api_key=client_key, api_secret=client_secret)
+
+def get_agave_client_session(request):
+    """Return an instantiated Agave client using data from an authenticated session."""
+    # grab tokens for session authorization
+    access_token = request.session.get("access_token")
+    refresh_token = request.session.get("refresh_token")
+    # token_exp = ag.token.token_info['expires_at']
+    return get_agave_client_tokens(access_token, refresh_token)
+
 
 
 # VIEWS
@@ -37,51 +61,15 @@ def history(request):
     """
     if not check_for_tokens(request):
         return redirect(reverse("login"))
-    # context = {}
-    # check errors, and convert the response to a "jobs" dictionary.
-    # jobs = [{"uname": "tzmatt", "id": "123", "name": "test", "status": "RUNNING", "start": "July 6 2017 9:47 AM", "end": "None", "type": "RUN"},
-    #{"id": "456", "name": "test2", "status": "FINISHED", "start": "July 7 2017 10:18 AM", "end": "July 7 2017 11:01 AM", "type": "BUILD"}]
+    ag = get_agave_client_session(request)
     if request.method == 'GET':
-        # grab tokens for session authorization
-        access_token = request.session.get(
-            "access_token")  #token from agave that represents the username and the oauth client
-        refresh_token = request.session.get(
-            "refresh_token")  #actual access token only lasts 4 hours, when expired -> token_expires
-        # token_exp = ag.token.token_info['expires_at']
-        ag = get_agave_client_tokens(access_token, refresh_token)
-
-        request.session['access_token'] = access_token
-        request.session['refresh_token'] = refresh_token
-
         try:
             jobs = ag.jobs.list()
-            # for job in jobs:
-            # 	print(job.id, '  ', job.status, '  ', job.created, '   ', job.owner, '   ', job.name)
-            # print jobs[0]
-
-            # for job in jobs:
-            # 	print job.id, job.status, job.name, job.startTime, job.endTime
             context = {"jobs": jobs}
             return render(request, 'iptsite/history.html', context, content_type='text/html')
 
         except Exception as e:
             raise e
-        # 	# import pdb; pdb.set_trace
-        # 	response = getattr(e, 'response', None)
-        # 	if response:
-        # 		message = response.content
-        # 	else:
-        # 		message = e.message
-        # 	context = {"history_error": "Error viewing history: {}, {}".format(type(e), message)}
-        # 	return render(request, 'iptsite/history.html', context, content_type='text/html')
-
-        # modal should display immediately after submit is clicked and job is compiling in background
-        # check history tab for updated status on your job
-        # print (jobs.id, '', jobs.name, '')
-
-        # render the history template, passing in the jobs dictionary.
-        # return render(request, 'iptsite/history.html', context, content_type='text/html')
-
 
 def run(request):
     """
@@ -151,41 +139,16 @@ def help(request):
         return render(request, 'iptsite/help.html', content_type='text/html')
 
 
-def get_agave_client(username, password):
-    client_key = os.environ.get('AGAVE_CLIENT_KEY')
-    client_secret = os.environ.get('AGAVE_CLIENT_SECRET')
-    base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
-    if not client_key or not client_secret:
-        raise Exception("Missing OAuth client credentials.")
-    return Agave(api_server=base_url, username=username, password=password, client_name="ipt", api_key=client_key,
-                 api_secret=client_secret)
-
-
-def get_agave_client_tokens(access_token, refresh_token):
-    client_key = os.environ.get('AGAVE_CLIENT_KEY')
-    client_secret = os.environ.get('AGAVE_CLIENT_SECRET')
-    base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
-    if not client_key or not client_secret:
-        raise Exception("Missing OAuth client credentials.")
-    return Agave(api_server=base_url, token=access_token, refresh_token=refresh_token, client_name="ipt",
-                 api_key=client_key, api_secret=client_secret)
-
-
 # @check_for_tokens
 def login(request):
     """
     This view generates the User Login page.
     """
-    # check if user already has a valid auth session
-    # and just redirect them to e.g. compile page, if so.
-    # LOGIN_REDIRECT_URL = '/compile' # means compile view
+    # check if user already has a valid auth session just redirect them to terminal page
     if check_for_tokens(request):
-        # if they have already logged in, let's also check whether their terminal has been submitted:
-        check_for_terminal()
         return redirect(reverse("terminal"))
 
     if request.method == 'POST':
-
         username = request.POST.get('username')
         password = request.POST.get('password')
 
@@ -204,10 +167,8 @@ def login(request):
             context = {"error": "Invalid username or password: {}".format(e)}
             return render(request, 'iptsite/login.html', context, content_type='text/html')
         # if we are here, we successfully generated an Agave client, so get the token data:
-        access_token = ag.token.token_info[
-            'access_token']  # token from agave that represents the username and the oauth client
-        refresh_token = ag.token.token_info[
-            'refresh_token']  # actual access token only lasts 4 hours, when expired -> token_expires
+        access_token = ag.token.token_info['access_token']
+        refresh_token = ag.token.token_info['refresh_token']
         token_exp = ag.token.token_info['expires_at']
 
         request.session['username'] = username
@@ -218,24 +179,6 @@ def login(request):
     elif request.method == 'GET':
         return render(request, 'iptsite/login.html', content_type='text/html')
 
-
-    # otherise, if request.method == POST this means the user
-    # has submitted the login form, so check the credentials
-    # and get an Agave acceess token.
-    # ...
-    # instantiate an Agave object:
-
-    # try to get a token using the username and password
-    # try:
-    #    	ag = Agave(base_url, client_key, client_secret), username, password)
-    # except Exception:
-    # 	return render(request, 'iptsite/login.html', context={'error': 'Invalid username/passwor'}, content_type='text/html')
-    # if thia call worked,
-    # 1) get the access token and put it in the session.
-    # 2) redirect to the compile page
-    # . . .
-    # otherwise, it is a GET request, so just show the login page:
-    # ...
     return render(request, 'iptsite/login.html', content_type='text/html')
 
 
@@ -328,17 +271,7 @@ def compile(request):
         "modules": "$MODULES_STR", }
         }
 
-        # grab tokens for session authorization
-        access_token = request.session.get(
-            "access_token")  # token from agave that represents the username and the oauth client
-        refresh_token = request.session.get(
-            "refresh_token")  # actual access token only lasts 4 hours, when expired -> token_expires
-        # token_exp = ag.token.token_info['expires_at']
-        ag = get_agave_client_tokens(access_token, refresh_token)
-
-        request.session['access_token'] = access_token
-        request.session['refresh_token'] = refresh_token
-
+        ag = get_agave_client_session(request)
         try:
             # submit job dictionary
             job = ag.jobs.submit(body=job_dict)  # getting 400, bad request
@@ -354,7 +287,7 @@ def compile(request):
         #
 
     elif request.method == 'GET':
-        return render(request, 'iptsite/compile.html', content_type='text/html')
+        return render(request, 'iptsite/compile.html', context, content_type='text/html')
 
     # populate dictionary with values received from user form
     """
@@ -371,15 +304,24 @@ def terminal(request):
     """
     This view generates the Terminal page.
     """
-    # Add these 2 lines of code after Terminal tab testing is complete to ensure
-    # that no unauthorized user can access this page.
-    # if not check_for_tokens(request):
-    # return redirect(reverse("login"))
-
-    if request.method == 'GET':
-        # TESTING HERE
-
-        return render(request, 'iptsite/terminal.html', content_type='text/html')
+    if not check_for_tokens(request):
+        return redirect(reverse("login"))
+    context = {}
+    try:
+        meta = check_for_terminal(request)
+    except IPTModelError as e:
+        # todo - logging/exception handling
+        error = "Got an IPTModelError: {}, {}".format(e.message, e)
+        context["error"] = error
+    if meta['status'] == TerminalMetadata.pending_status:
+        context["msg"] = "Please wait while your IPT terminal loads (status: {}).".format(meta['status'])
+        context["url"] = ""
+    elif meta['status'] == TerminalMetadata.ready_status:
+        context["msg"] = "Your IPT terminal is ready."
+        context["url"] = meta["url"]
+    else:
+        context["msg"] = "Meta record value: {}".format(meta)
+    return render(request, 'iptsite/terminal.html', context, content_type='text/html')
 
 
 def create_account(request):

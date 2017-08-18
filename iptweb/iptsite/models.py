@@ -85,7 +85,7 @@ class TerminalMetadata(object):
     def _create_meta(self, ag):
         """Create the meta record in Agave using the agave client, `ag`. """
         name = get_metatdata_name(self.user)
-        d = self._get_meta_dict(name, self.pending_status)
+        d = self._get_meta_dict(self.pending_status)
         try:
             m = ag.meta.addMetadata(body=json.dumps(d))
         except Exception as e:

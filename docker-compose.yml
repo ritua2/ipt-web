@@ -18,6 +18,11 @@ django:
         - "8000:8000"
     environment:
         "IPT_INSTANCE": "dev"
-        "AGAVE_CLIENT_KEY": "0EbNE3EIss50ffopFR_8djPMYfIa"
-        "AGAVE_CLIENT_SECRET":
+        "AGAVE_CLIENT_KEY": ""
+        "AGAVE_CLIENT_SECRET": "rIDln0TXZNHJABkoErl4tBmO5mQa"
         "AGAVE_BASE_URL": "https://api.tacc.utexas.edu"
+        "ACTOR_URL": "https://api.tacc.utexas.edu/actors/v2/<uuid>"
+        "ACTOR_EXECUTION_IP": ""
+        "ACTOR_EXECUTION_SSH_USER": ""
+        "ACTOR_EXECUTION_SSH_KEY": ""
+

@@ -5,14 +5,19 @@ This is the main repository for assets related to web-based deployments of the I
 For more information about IPT, see the literature (e.g. https://www.tacc.utexas.edu/documents/13601/1028648/paper_xsede_formatted.pdf)
 
 ## Development ##
-
+First, clone this repository onto your local machine.
 Starting the development stack requires Docker and docker-compose. Once Docker is installed on your system, build
-the ipt-web image:
+the ipt-web image by executing the following from within the git project root:
   ```shell
   $ docker build -t jstubbs/ipt-web .
   ```
 
-Run the stack using the docker-compose file:
+You will also need to export some environment variables that contain Agave credentials, SSH keys, etc that cannot be
+stored in the repository for security reasons. A set of these credentials is mainted in a stache entry called
+"ipt-web credentials". Ask an IPT admin to share this stache entry with you, or generate your own Agave OAuth client,
+SSH key, etc.
+
+Once the variables are exported into a shell, run the stack using the docker-compose file:
    ```shell
    $ docker-compose up -d
    ```

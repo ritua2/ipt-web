@@ -19,7 +19,14 @@ def check_for_terminal(request):
     method should only be called once the user has logged in and has tokens in their session.
     """
     ag = get_agave_client_session(request)
-    m = TerminalMetadata(request.session.get('username'), ag)
+    try:
+        m = TerminalMetadata(request.session.get('username'), ag)
+    except IPTModelError as e:
+        try:
+            token_info = ag.token.token_info
+        except Exception as e:
+            token_info = "Unable to pull token info: {}".format(e)
+        raise IPTModelError("{}. Access token used: {}".format(e.message, token_info))
     if m.value['status'] == m.pending_status:
         # todo - execute abaco worker to launch a terminal.
         pass
@@ -38,8 +45,10 @@ def get_agave_client_tokens(access_token, refresh_token):
     client_key = os.environ.get('AGAVE_CLIENT_KEY')
     client_secret = os.environ.get('AGAVE_CLIENT_SECRET')
     base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
-    if not client_key or not client_secret:
-        raise Exception("Missing OAuth client credentials.")
+    if not client_key:
+        raise Exception("Missing OAuth client key.")
+    if not client_secret:
+        raise Exception("Missing OAuth client secret.")
     return Agave(api_server=base_url, token=access_token, refresh_token=refresh_token, client_name="ipt",
                  api_key=client_key, api_secret=client_secret)
 
@@ -313,6 +322,7 @@ def terminal(request):
         # todo - logging/exception handling
         error = "Got an IPTModelError: {}, {}".format(e.message, e)
         context["error"] = error
+        return render(request, 'iptsite/terminal.html', context, content_type='text/html')
     if meta['status'] == TerminalMetadata.pending_status:
         context["msg"] = "Please wait while your IPT terminal loads (status: {}).".format(meta['status'])
         context["url"] = ""

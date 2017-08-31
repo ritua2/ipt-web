@@ -12,6 +12,9 @@ the ipt-web image by executing the following from within the git project root:
   $ docker build -t jstubbs/ipt-web .
   ```
 
+Next, generate self-signed certs (or download the ssl certs from the IPT/certs directory on UTBox) and place them
+ in the `docker/nginx/ssl` directory within the repo.
+
 You will also need to export some environment variables that contain Agave credentials, SSH keys, etc that cannot be
 stored in the repository for security reasons. A set of these credentials is maintained in a stache entry called
 "ipt-web credentials". Ask an IPT admin to share this stache entry with you, or generate your own Agave OAuth client,

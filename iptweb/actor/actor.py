@@ -20,10 +20,16 @@
 #    - ipt_instance (required): The IPT instance string (e.g. "dev" or "prod").
 #    - access_token (required): An OAuth access token representing the user.
 #    - api_server (optional): The Agave api_server to use.
+#    - command (optional, defaults to START): the command to use.
 #
-
+# Building the image:
+#    docker build -t jstubbs/ipt-actor -f Dockerfile-actor .
+#
+# Testing locally:
+#    docker run -it --rm -e MSG='{...}' jstubbs/ipt-actor
 
 import os
+import sys
 import paramiko
 import StringIO
 
@@ -31,6 +37,18 @@ from agavepy.actors import get_context
 from agavepy.agave import Agave
 
 from models import TerminalMetadata
+
+def audit_required_fields(message):
+    if not message.get('execution_ssh_key'):
+        print("Missing SSH key. message: {}".format(message))
+        sys.exit(1)
+    if not message.get("user_name"):
+        print("Missing user_name. message: {}".format(message))
+        sys.exit(1)
+    if not message.get("access_token"):
+        print("Missing access_token. message: {}".format(message))
+        sys.exit(1)
+    print("All required fields passed. message: {}".format(message))
 
 def get_ssh_connection(message):
     """Create an SSH connection to the execution host."""
@@ -65,10 +83,22 @@ def launch_terminal(user_name, container_name, conn, ip):
     command = 'cd /data/ipt/jobs/terminals/; ' \
               './wrapper.sh {} /data/ipt/storage/{}'.format(container_name, user_name)
     ssh_stdin, ssh_stdout, ssh_stderr = conn.exec_command(command)
+    print("ssh connection made and command executed")
     # TODO - parse standard error to ensure command was successful.
     # TODO - parse standard out for the port of the container:
-    port = ssh_stdout.read()
-    return "https://{}:{}".format(ip, port)
+    st_out = ssh_stdout.read()
+    print("st out from command: {}".format(st_out))
+    #
+    try:
+        port = st_out.split('0.0.0.0:')[1]
+    except IndexError:
+        print("There was an IndexError parsing the standard out of the terminal launch for the port. "
+              "Standard out was: {}".format(st_out))
+        return ""
+    print("got a port: {}".format(port))
+    url = "https://{}:{}".format(ip, port).replace('\n', '')
+    print("returning url: {}".format(url))
+    return url
 
 def stop_terminal(container_name, conn):
     """Stop and remove an IPT terminal application container."""
@@ -86,6 +116,7 @@ def get_terminal_status(container_name, conn):
 def main():
     context = get_context()
     message = context['message_dict']
+    audit_required_fields(message)
     conn, ip = get_ssh_connection(message)
     user_name, container_name = get_user_data(message)
     ag = get_agave_client(message)
@@ -93,10 +124,15 @@ def main():
     command = message.get('command', 'START')
     if command == 'START':
         url = launch_terminal(user_name, container_name, conn, ip)
-        m.set_ready(url)
+        if not url:
+            m.set_error("Actor got an error trying to launch terminal. Check the logs")
+        else:
+            print("Setting actor to ready status for URL: {}".format(url))
+            m.set_ready(url)
+            print("Status updated. Actor exiting.")
     elif command == 'STOP':
         stop_terminal(container_name, conn)
-        m.
+        m.set_stopped()
     elif command == "SYNC":
         get_terminal_status()
 

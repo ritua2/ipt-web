@@ -35,6 +35,7 @@ class TerminalMetadata(object):
     pending_status = "PENDING"
     submitted_status = "SUBMITTED"
     ready_status = "READY"
+    stopped_status = "STOPPED"
     error_status = "ERROR"
 
     def _get_meta_dict(self, status, url=""):
@@ -99,6 +100,7 @@ class TerminalMetadata(object):
         self.user = user
         self.name = get_metatdata_name(user)
         self.metadata_name = get_metatdata_name(user)
+        self.ag = ag
         try:
             # try to retrieve the metadata record from agave
             self._get_meta(ag)
@@ -122,6 +124,12 @@ class TerminalMetadata(object):
         if not url:
             url = self.value['url']
         d = self._get_meta_dict(status=self.error_status, url=url)
+        return self._update_meta(self.ag, d)
+
+    def set_stopped(self):
+        """Update the status to stopped on the user's metadata record for a stopped terminal session."""
+        url = ''
+        d = self._get_meta_dict(status=self.stopped_status, url=url)
         return self._update_meta(self.ag, d)
 
     def get_status(self, url):

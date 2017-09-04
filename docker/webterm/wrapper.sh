@@ -17,7 +17,7 @@ name=$1
 data=$2
 
 # launch the container
-docker run --name $1 -p 3000 -dt -v $data:/data -v $(pwd)/ssl:/ssl jstubbs/ipt-webterm app.js --sslkey /ssl/ipt-web.tacc.utexas.edu.key --sslcert /ssl/ipt-web.tacc.utexas.edu.bundle.crt -p 3000
+docker run --name $1 -p 3000 -dt -v $data:/data -v $(pwd)/ssl:/ssl jstubbs/ipt-webterm app.js --urlPath /test --sslkey /ssl/ipt-web.tacc.utexas.edu.key --sslcert /ssl/ipt-web.tacc.utexas.edu.bundle.crt -p 3000
 
 # get the container id by first grep'ing for the name (which should be a unique container) and then
 # pulling the first container

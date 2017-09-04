@@ -8,6 +8,9 @@
         <li><a data-toggle="tab" href="run">Run</a></li>
         <li><a data-toggle="tab" href="history">Job History</a></li>
         <li class="active"><a data-toggle="tab" href="help">Help</a></li>
+{% if admin %}
+        <li><a data-toggle="tab" href="admin">Admin</a></li>
+{% endif %}
         {% endblock %}
 
         {% block body %}

@@ -8,6 +8,9 @@
         <li><a data-toggle="tab" href="run">Run</a></li>
         <li><a data-toggle="tab" href="history">Job History</a></li>
         <li><a data-toggle="tab" href="help">Help</a></li>
+{% if admin %}
+        <li><a data-toggle="tab" href="admin">Admin</a></li>
+{% endif %}
         {% endblock %}
 
         {% block body %}
@@ -29,9 +32,33 @@
         <div> {{ msg }}</div>
         {% endif %}
 
+
+        <!--iframe src="https://ipt-web.tacc.utexas.edu/webterm"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe-->
         {% if url %}
-        <iframe src="{{ url }}"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+        <iframe id="webterm" src="{{ url }}"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+        {% else %}
+        <iframe id="webterm" src=""  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
         {% endif %}
+<script>
+    $(document).ready(function(){
+        src = document.getElementById('webterm').src;
+        if (src === "https://ipt-web.tacc.utexas.edu/terminal"){
+            updated_src = "";
+            while (updated_src === ""){
+
+                $.get("webterm",
+                function(data) {
+                    obj = JSON.parse(data);
+                    if (obj.url !== ""){
+                        updated_src = obj.url;
+                    }
+                });
+            }
+            $('#webterm').src() = updated_src;
+        }
+
+    });
+</script>
 
         {% endblock %}
 

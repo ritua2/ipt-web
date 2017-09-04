@@ -12,15 +12,17 @@
 # environment or passed in the JSON message when executing the actor. This actor looks
 # in the context created by the Abaco SDK for these values.
 #
-# ALL commands:
+# PASSED IN AT REGISTRATION (these can be overritten at run time):
 #    - execution_ssh_key (required): The KEY used to access the execution host(s).
+#    - ipt_instance (required): The IPT instance string (e.g. "dev" or "prod").
+
+# PARAMETERS to ALL commands:
+#    - user_name (required): The username to act on.
+#    - access_token (required): An OAuth access token representing the user.
+#    - command (optional, defaults to START): the command to use.
 #    - execution_ip and execution_ssh_user (optional): Connection information for the
 #           execution host.
-#    - user_name (required): The username to act on.
-#    - ipt_instance (required): The IPT instance string (e.g. "dev" or "prod").
-#    - access_token (required): An OAuth access token representing the user.
 #    - api_server (optional): The Agave api_server to use.
-#    - command (optional, defaults to START): the command to use.
 #
 # Building the image:
 #    docker build -t jstubbs/ipt-actor -f Dockerfile-actor .
@@ -38,10 +40,13 @@ from agavepy.agave import Agave
 
 from models import TerminalMetadata
 
-def audit_required_fields(message):
+def audit_required_fields(context, message):
+    print("context: {}".format(context))
+    print("message: {}".format(message))
     if not message.get('execution_ssh_key'):
-        print("Missing SSH key. message: {}".format(message))
-        sys.exit(1)
+        if not context.get('execution_ssh_key'):
+            print("Missing SSH key. message: {}".format(message))
+            sys.exit(1)
     if not message.get("user_name"):
         print("Missing user_name. message: {}".format(message))
         sys.exit(1)
@@ -50,11 +55,17 @@ def audit_required_fields(message):
         sys.exit(1)
     print("All required fields passed. message: {}".format(message))
 
-def get_ssh_connection(message):
+def get_ssh_connection(context, message):
     """Create an SSH connection to the execution host."""
-    execution_ip = message.get('execution_ip', '129.114.17.73')
-    execution_ssh_user = message.get('execution_ssh_user', 'centos')
-    execution_ssh_key = message.get('execution_ssh_key')
+    execution_ip = context.get('execution_ip', '129.114.17.73')
+    if message.get('execution_ip'):
+        execution_ip = message.get('execution_ip', '129.114.17.73')
+    execution_ssh_user = context.get('execution_ssh_user', 'root')
+    if message.get('execution_ssh_user'):
+        execution_ssh_user = message.get('execution_ssh_user')
+    execution_ssh_key = context.get('execution_ssh_key')
+    if message.get('execution_ssh_key'):
+        execution_ssh_key = message.get('execution_ssh_key')
     # instantiate an SSH client
     ssh = paramiko.SSHClient()
     # create an RSAKey object from the private key string.
@@ -65,10 +76,13 @@ def get_ssh_connection(message):
     ssh.connect(execution_ip, username=execution_ssh_user, pkey=pkey)
     return ssh, execution_ip
 
-def get_user_data(message):
+def get_user_data(context, message):
     """Get the username, ipt_instance, container name and token."""
+    ipt_instance = context.get('ipt_instance')
+    if message.get('ipt_instance'):
+        ipt_instance = message.get('ipt_instance')
     user_name = message.get('user_name')
-    ipt_instance = message.get('ipt_instance')
+
     container_name = '{}.{}.IPT'.format(user_name, ipt_instance)
     return user_name, container_name
 
@@ -85,7 +99,6 @@ def launch_terminal(user_name, container_name, conn, ip):
     ssh_stdin, ssh_stdout, ssh_stderr = conn.exec_command(command)
     print("ssh connection made and command executed")
     # TODO - parse standard error to ensure command was successful.
-    # TODO - parse standard out for the port of the container:
     st_out = ssh_stdout.read()
     print("st out from command: {}".format(st_out))
     #
@@ -96,7 +109,7 @@ def launch_terminal(user_name, container_name, conn, ip):
               "Standard out was: {}".format(st_out))
         return ""
     print("got a port: {}".format(port))
-    url = "https://{}:{}".format(ip, port).replace('\n', '')
+    url = "https://{}:{}/test".format(ip, port).replace('\n', '')
     print("returning url: {}".format(url))
     return url
 
@@ -104,7 +117,6 @@ def stop_terminal(container_name, conn):
     """Stop and remove an IPT terminal application container."""
     command = 'docker rm -f {}'.format(container_name)
     _, ssh_stdout, ssh_stderr = conn.exec_command(command)
-    # TODO - parse standard error to ensure command was successful.
 
 def get_terminal_status(container_name, conn):
     command = 'docker ps -a {}'.format(container_name)
@@ -116,9 +128,9 @@ def get_terminal_status(container_name, conn):
 def main():
     context = get_context()
     message = context['message_dict']
-    audit_required_fields(message)
-    conn, ip = get_ssh_connection(message)
-    user_name, container_name = get_user_data(message)
+    audit_required_fields(context, message)
+    conn, ip = get_ssh_connection(context, message)
+    user_name, container_name = get_user_data(context, message)
     ag = get_agave_client(message)
     m = TerminalMetadata(user_name, ag)
     command = message.get('command', 'START')

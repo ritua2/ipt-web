@@ -124,6 +124,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # LOGIN_REDIRECT_URL = '/' # means home view
 
+
+# set to false to skip calls to the actor
+CALL_ACTOR = True
+
 # list of users capable of reaching the admin URL
 ADMIN_USERS = ['jstubbs']
 

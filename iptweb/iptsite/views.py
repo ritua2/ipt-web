@@ -24,6 +24,8 @@ def get_agave_exception_content(e):
 def get_service_client():
     """Returns an agave client representing the service account. This client can be used to access
     the authorized endpoints such as the abaco endpoint."""
+    if not settings.CALL_ACTOR:
+        logger.debug("Skipping call to actor since settings.CALL_ACTOR was False.")
     service_token = os.environ.get('AGAVE_SERVICE_TOKEN')
     if not service_token:
         raise Exception("Missing SERVICE_TOKEN configuration.")

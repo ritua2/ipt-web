@@ -28,6 +28,24 @@ def get_user(meta_name):
     """Return the username associated with a meta records name field."""
     return meta_name.split('.')[0]
 
+def is_ipt_meta(m):
+    """Check whether a metadata record, m, is associated with this IPT instance."""
+    value = m.get('value')
+    # IPT metadata records are dictionaries that have a name field:
+    if not hasattr(value, 'get'):
+        return False
+    name = value.get('name')
+    if not name:
+        return False
+    # the name field should have three parts separated by periods:
+    name_parts = name.split('.')
+    if not (len(name_parts) == 3):
+        return False
+    if not (name_parts[1] == get_ipt_instance()):
+        return False
+    if not (name_parts[2] == 'IPT'):
+        return False
+    return True
 
 class TerminalMetadata(object):
     """Model to hold metadata about a specific user's terminal session."""
@@ -69,10 +87,19 @@ class TerminalMetadata(object):
             m = ag.meta.addMetadata(body=json.dumps(d))
         except Exception as e:
             # todo - figure out logging
-            msg = "Python exception trying to create the meta record for user {}. Exception: {}".format(self.user, e)
+            msg = "Exception trying to create the meta record for user {}. Exception: {}".format(self.user, e)
             raise IPTModelError(msg)
         self.uuid = m['uuid']
         self.value = m['value']
+        # share the metadata with the service account
+        service_account = os.environ.get('AGAVE_SERVICE_ACCOUNT', "apitest")
+        try:
+            ag.meta.updateMetadataPermissions(uuid=self.uuid,
+                                              body={'permission':'READ_WRITE',
+                                                    'username': service_account})
+        except Exception as e:
+            msg = "Exception trying to share the meta record for user: {}. Exception:{}".format(self.user, e)
+            raise IPTModelError(msg)
 
     def _update_meta(self, ag, d):
         """Update the metadata record value to the data in `d`, a dictionary."""
@@ -128,12 +155,15 @@ class TerminalMetadata(object):
 
     def set_stopped(self):
         """Update the status to stopped on the user's metadata record for a stopped terminal session."""
-        url = ''
-        d = self._get_meta_dict(status=self.stopped_status, url=url)
+        d = self._get_meta_dict(status=self.stopped_status, url='')
         return self._update_meta(self.ag, d)
 
-    def get_status(self, url):
-        """Return the status of associated with this termina,."""
+    def set_pending(self):
+        """Update the status to pending on the user's metadata record for a stopped terminal session."""
+        d = self._get_meta_dict(status=self.stopped_status, url='')
+        return self._update_meta(self.ag, d)
+
+    def get_status(self):
+        """Return the status of associated with this terminal,."""
         # refresh the object's representation from Agave:
-        self._get_meta_dict()
         return self.value['status']

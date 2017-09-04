@@ -12,6 +12,7 @@ related jobs on machines like Stampede. Job execution and history is managed by 
 IPT terminals on the cluster is handled by an actor registered with the Abaco API. State associated with the terminal
 shells is stored in Agave's metadata service. As a result, the IPT web application itself is entirely stateless. At a high
 level, the architecture is:
+
 * Stateless IPT Django application (`ipt-web`) uses TACC OAuth for authorization.
 * `ipt-web` makes calls to an Abaco actor (`ipt-actor`) to start and stop IPT terminals running in Docker containers on a configurable compute cluster.
 * `ipt-web` and `ipt-actor` communicate state about the terminals (e.g. their status and URL) via the Agave metadata service.

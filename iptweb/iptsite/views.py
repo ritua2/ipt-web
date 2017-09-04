@@ -1,12 +1,79 @@
 import os
-# pull in entire package
+
+# import the logging library
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
 from agavepy.agave import Agave
-# pull in python class
-
 from django.shortcuts import render, redirect, reverse
-import requests
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 
-from models import TerminalMetadata, IPTError, IPTModelError
+from models import is_ipt_meta, get_user, TerminalMetadata, IPTError, IPTModelError
+
+
+def get_agave_exception_content(e):
+    """Check if an Agave exception has content"""
+    try:
+        return e.response.content
+    except Exception:
+        return ""
+
+def get_service_client():
+    """Returns an agave client representing the service account. This client can be used to access
+    the authorized endpoints such as the abaco endpoint."""
+    service_token = os.environ.get('AGAVE_SERVICE_TOKEN')
+    if not service_token:
+        raise Exception("Missing SERVICE_TOKEN configuration.")
+    base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
+    return Agave(api_server=base_url, token=service_token)
+
+def call_actor(request, user_name=None, command="START"):
+    """Call the actor function to manage a user's terminal session. Assumes the request has a valid
+    authentication session.
+    """
+    # we'll send the user's access token and base_url to the actor so for updating the
+    # TerminalMetadata record
+    access_token = request.session.get("access_token")
+    if not user_name:
+        user_name = request.session['username']
+    base_url = os.environ.get('AGAVE_BASE_URL', "https://api.tacc.utexas.edu")
+    if not access_token or not user_name:
+        raise Exception("authentication required for calling actor.")
+    logger.info("Calling actor for command: {}, user: {}".format(command, user_name))
+    ag2 = get_service_client()
+    actor_id = os.environ.get('ACTOR_ID')
+    if not actor_id:
+        raise Exception("Missing ACTOR_ID configuration.")
+    # build a message with the basic parameters needed by the actor
+    message = {'access_token': access_token,
+               'user_name': user_name,
+               'command': command,
+               'api_server': base_url
+               }
+    # grab original status and update status to submitted:
+    t = TerminalMetadata(user_name, ag2)
+    old_status = t.get_status()
+    t.set_submitted()
+
+    # execute actor:
+    try:
+        rsp = ag2.actors.sendMessage(actorId=actor_id, body={'message': message})
+    except Exception as e:
+        msg = "Error executing actor. Execption: {}. Content: {}".format(e, get_agave_exception_content(e))
+        logger.error(msg)
+        if old_status == TerminalMetadata.error_status:
+            t.set_error()
+        elif old_status == TerminalMetadata.ready_status:
+            t.set_ready()
+        elif old_status == TerminalMetadata.stopped_status:
+            t.set_stopped()
+        elif old_status == TerminalMetadata.pending_status:
+            t.set_pending()
+        raise Exception(msg)
+    logger.info("Called actor. Message: {}. Response: {}".format(message, rsp))
 
 def check_for_tokens(request):
     access_token = request.session.get("access_token")
@@ -27,9 +94,8 @@ def check_for_terminal(request):
         except Exception as e:
             token_info = "Unable to pull token info: {}".format(e)
         raise IPTModelError("{}. Access token used: {}".format(e.message, token_info))
-    if m.value['status'] == m.pending_status:
-        # todo - execute abaco worker to launch a terminal.
-        pass
+    if m.value['status'] == m.pending_status or m.value['status'] == m.stopped_status:
+        call_actor(request)
     return m.value
 
 def get_agave_client(username, password):
@@ -61,8 +127,49 @@ def get_agave_client_session(request):
     return get_agave_client_tokens(access_token, refresh_token)
 
 
+def is_admin(user_name):
+    return user_name in settings.ADMIN_USERS
+
 
 # VIEWS
+
+def admin(request):
+    """List all current users and the status of their terminal sessions."""
+    if not check_for_tokens(request):
+        return redirect(reverse("login"))
+    user_name = request.session.get("username")
+    if not is_admin(user_name):
+        return HttpResponse('Unauthorized', status=401)
+    ag = get_service_client()
+    if request.method == 'POST':
+        # admin is requesting a change to this user. Need to first put the metadata record in status
+        # SUBMITTED so that no additional changes are made.
+        pending_user = request.POST.get('user')
+        call_actor(request, user_name=request.POST.get('user'), command=request.POST.get('command'))
+
+    metas = ag.meta.listMetadata()
+    terminals = []
+    for m in metas:
+        if is_ipt_meta(m):
+            value = m.get('value')
+            user = get_user(value.get('name'))
+            action = None
+            submit = None
+            if (value.get('status') == TerminalMetadata.ready_status or
+                value.get('status') == TerminalMetadata.error_status):
+                action = 'STOP'
+                submit = 'Stop'
+            terminals.append({'user': user,
+                              'name': value.get('name'),
+                              'status': value.get('status'),
+                              'url': value.get('url'),
+                              'uuid': m['uuid'],
+                              'action': action,
+                              'submit': submit})
+    return render(request, 'iptsite/admin.html',
+                  context={'admin': True,
+                           'terminals': terminals},
+                  content_type='text/html')
 
 def history(request):
     """
@@ -70,11 +177,12 @@ def history(request):
     """
     if not check_for_tokens(request):
         return redirect(reverse("login"))
+    user_name = request.session.get("username")
     ag = get_agave_client_session(request)
     if request.method == 'GET':
         try:
             jobs = ag.jobs.list()
-            context = {"jobs": jobs}
+            context = {"jobs": jobs, "admin": is_admin(user_name)}
             return render(request, 'iptsite/history.html', context, content_type='text/html')
 
         except Exception as e:
@@ -87,7 +195,8 @@ def run(request):
     # if tokens for valid session aren't there, redirect user to login page
     if not check_for_tokens(request):
         return redirect(reverse("login"))
-    context = {}
+    user_name = request.session.get("username")
+    context = {"admin": is_admin(user_name)}
 
     if request.method == 'POST':
 
@@ -144,8 +253,10 @@ def help(request):
     """
     This view generates the Help page.
     """
+    user_name = request.session.get("username")
+    context = {"admin": is_admin(user_name)}
     if request.method == 'GET':
-        return render(request, 'iptsite/help.html', content_type='text/html')
+        return render(request, 'iptsite/help.html', context, content_type='text/html')
 
 
 # @check_for_tokens
@@ -244,7 +355,8 @@ def compile(request):
     # if tokens for valid session aren't there, redirect to the login page
     if not check_for_tokens(request):
         return redirect(reverse("login"))
-    context = {}
+    user_name = request.session.get("username")
+    context = {"admin": is_admin(user_name)}
 
     if request.method == 'POST':
 
@@ -315,7 +427,9 @@ def terminal(request):
     """
     if not check_for_tokens(request):
         return redirect(reverse("login"))
-    context = {}
+    user_name = request.session.get("username")
+    context = {"admin": is_admin(user_name)}
+
     try:
         meta = check_for_terminal(request)
     except IPTModelError as e:
@@ -329,9 +443,30 @@ def terminal(request):
     elif meta['status'] == TerminalMetadata.ready_status:
         context["msg"] = "Your IPT terminal is ready."
         context["url"] = meta["url"]
+    elif meta['status'] == TerminalMetadata.stopped_status:
+        context["msg"] = "Your IPT terminal was stopped. We have started a new IPT terminal for you." \
+                         "Please wait while the terminal loads."
     else:
         context["msg"] = "Meta record value: {}".format(meta)
     return render(request, 'iptsite/terminal.html', context, content_type='text/html')
+
+def webterm(request):
+    """API backend for the iframe content on the terminal page."""
+    if not check_for_tokens(request):
+        # it should not be possible for the user to be calling the /webterm endpoint
+        # without a session.
+        return ""
+    ag = get_agave_client_session(request)
+    # check status of terminal and get url
+    try:
+        m = TerminalMetadata(request.session.get('username'), ag)
+    except IPTModelError as e:
+        try:
+            token_info = ag.token.token_info
+        except Exception as e:
+            token_info = "Unable to pull token info: {}".format(e)
+        raise IPTModelError("{}. Access token used: {}".format(e.message, token_info))
+    return JsonResponse(m.value)
 
 
 def create_account(request):

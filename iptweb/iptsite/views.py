@@ -1,4 +1,6 @@
 import os
+import urllib
+import inspect
 
 # import the logging library
 import logging
@@ -6,13 +8,73 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+from datetime import datetime
+
 from agavepy.agave import Agave
 from django.shortcuts import render, redirect, reverse
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, FileResponse
 
 from models import is_ipt_meta, get_user, TerminalMetadata, IPTError, IPTModelError
 
+
+AGAVE_STORAGE_SYSTEM_ID = os.environ.get('AGAVE_STORAGE_SYSTEM_ID', 'dev.ipt.cloud.storage')
+
+SYSTEMS = {
+    'stampede':{
+        'display_name': 'Stampede 2',
+        'build': {
+            'app': settings.STAMPEDE_BUILD_APP_VERSION,
+            'system': 'ipt.build.stampede',
+        },
+        'run': {
+            'app': settings.STAMPEDE_RUN_APP_VERSION,
+            'system': 'ipt.run.stampede',
+        },
+        'queues':(
+            'normal',
+            'development',
+            'flat-quadrant',
+            'skx-dev',
+            'skx-normal',
+        )
+    },
+    'ls5':{
+        'display_name': 'Lonestar 5',
+        'build': {
+            'app': settings.LS5_BUILD_APP_VERSION,
+            'system': 'ipt.build.ls5',
+        },
+        'run': {
+            'app': settings.LS5_RUN_APP_VERSION,
+            'system': 'ipt.run.ls5',
+        },
+        'queues':(
+            'normal',
+            'development',
+            'gpu',
+            'vis',
+        )
+    },
+    'comet':{
+        'display_name': 'Comet',
+        'build': {
+            'app': settings.COMET_BUILD_APP_VERSION,
+            'system': 'ipt.build.comet',
+        },
+        'run': {
+            'app': settings.COMET_RUN_APP_VERSION,
+            'system': 'ipt.run.comet',
+        },
+        'queues':(
+            'gpu-shared',
+            'gpu',
+            'debug',
+            'compute',
+        )
+    },
+}
 
 def get_agave_exception_content(e):
     """Check if an Agave exception has content"""
@@ -20,6 +82,40 @@ def get_agave_exception_content(e):
         return e.response.content
     except Exception:
         return ""
+
+
+def format_path(path):
+    if path.startswith('/home/ipt/'):
+        return path[10:]
+    elif path.startswith('~/'):
+        return path[2:]
+    return path
+
+def get_request():
+    """Walk up the stack, return the nearest first argument named "request"."""
+    frame = None
+    try:
+        for f in inspect.stack()[1:]:
+            frame = f[0]
+            code = frame.f_code
+            if code.co_varnames and code.co_varnames[0] == "request":
+                request = frame.f_locals['request']
+    finally:
+        del frame
+    return request
+
+def update_session_tokens(**kwargs):
+    """Update the request's session with the latest tokens since the client may have
+    automatically refreshed them."""
+
+    request = get_request()
+    logger.info('request.session access_token before refreshing: {}'.format(request.session.get('access_token')))
+    logger.info('request.session refresh_token before refreshing: {}'.format(request.session.get('refresh_token')))
+    request.session['access_token'] = kwargs['access_token']
+    request.session['refresh_token'] = kwargs['refresh_token']
+    logger.info('request.session access_token after refreshing: {}'.format(request.session.get('access_token')))
+    logger.info('request.session refresh_token after refreshing: {}'.format(request.session.get('refresh_token')))
+
 
 def get_service_client():
     """Returns an agave client representing the service account. This client can be used to access
@@ -46,6 +142,10 @@ def call_actor(request, user_name=None, command="START"):
         raise Exception("authentication required for calling actor.")
     logger.info("Calling actor for command: {}, user: {}".format(command, user_name))
     ag2 = get_service_client()
+    # for STOP commands coming from the Admin tab, we need to use the service token to prevent the actor
+    # from creating a metadata record owned by the admin user.
+    if command == 'STOP':
+        access_token = os.environ.get('AGAVE_SERVICE_TOKEN')
     actor_id = os.environ.get('ACTOR_ID')
     if not actor_id:
         raise Exception("Missing ACTOR_ID configuration.")
@@ -75,7 +175,7 @@ def call_actor(request, user_name=None, command="START"):
         elif old_status == TerminalMetadata.pending_status:
             t.set_pending()
         raise Exception(msg)
-    logger.info("Called actor. Message: {}. Response: {}".format(message, rsp))
+    logger.info("Called actor {}. Message: {}. Response: {}".format(actor_id, message, rsp))
 
 def check_for_tokens(request):
     access_token = request.session.get("access_token")
@@ -87,9 +187,18 @@ def check_for_terminal(request):
     """ Check to determine if a user has a terminal session submitted and submit one if not. This
     method should only be called once the user has logged in and has tokens in their session.
     """
+    username = request.session.get('username')
+    # first, make sure the user's directory is in place. use the service token to make these calls:
+    ag2 = get_service_client()
+    try:
+        ag2.files.manage(systemId=AGAVE_STORAGE_SYSTEM_ID, filePath='/', body={'action': 'mkdir', 'path': username})
+    except Exception as e:
+        logger.error("Failed to create user directory for user {}. Exception: {}".format(username, e))
+
+    # use the user's token to work with the metadata
     ag = get_agave_client_session(request)
     try:
-        m = TerminalMetadata(request.session.get('username'), ag)
+        m = TerminalMetadata(username, ag)
     except IPTModelError as e:
         try:
             token_info = ag.token.token_info
@@ -107,7 +216,7 @@ def get_agave_client(username, password):
     if not client_key or not client_secret:
         raise Exception("Missing OAuth client credentials.")
     return Agave(api_server=base_url, username=username, password=password, client_name="ipt", api_key=client_key,
-                 api_secret=client_secret)
+                 api_secret=client_secret, token_callback=update_session_tokens)
 
 def get_agave_client_tokens(access_token, refresh_token):
     client_key = os.environ.get('AGAVE_CLIENT_KEY')
@@ -118,7 +227,8 @@ def get_agave_client_tokens(access_token, refresh_token):
     if not client_secret:
         raise Exception("Missing OAuth client secret.")
     return Agave(api_server=base_url, token=access_token, refresh_token=refresh_token, client_name="ipt",
-                 api_key=client_key, api_secret=client_secret)
+                api_key=client_key, api_secret=client_secret, token_callback=update_session_tokens)
+
 
 def get_agave_client_session(request):
     """Return an instantiated Agave client using data from an authenticated session."""
@@ -148,6 +258,7 @@ def admin(request):
         # SUBMITTED so that no additional changes are made.
         pending_user = request.POST.get('user')
         call_actor(request, user_name=request.POST.get('user'), command=request.POST.get('command'))
+        return redirect(reverse("admin"))
 
     metas = ag.meta.listMetadata()
     terminals = []
@@ -181,14 +292,17 @@ def history(request):
         return redirect(reverse("login"))
     user_name = request.session.get("username")
     ag = get_agave_client_session(request)
+
     if request.method == 'GET':
         try:
             jobs = ag.jobs.list()
             context = {"jobs": jobs, "admin": is_admin(user_name)}
             return render(request, 'iptsite/history.html', context, content_type='text/html')
-
         except Exception as e:
-            raise e
+            # raise e
+            msg = "Error uploading file. Exception: {}".format(e)
+            logger.error(msg)
+            messages.error(request, msg)
 
 def run(request):
     """
@@ -198,55 +312,129 @@ def run(request):
     if not check_for_tokens(request):
         return redirect(reverse("login"))
     user_name = request.session.get("username")
-    context = {"admin": is_admin(user_name)}
+
+    context = {
+        "admin": is_admin(user_name),
+        "systems": SYSTEMS,
+    }
 
     if request.method == 'POST':
-
+        system = request.POST.get('system')
         rcommand = request.POST.get('rcommand')
         jobq = request.POST.get('jobq')
         numcores = request.POST.get('numcores')
         numnodes = request.POST.get('numnodes')
         estrun = request.POST.get('estrun')
         allocnum = request.POST.get('allocnum')
-        bin = request.POST.get('bin')
-        run_additional_files = request.POST.get('run_additional_files')
+        binary = request.POST.get('binary')
+        addfiles = request.POST.get('addfiles')
+        modules = request.POST.get('modules')
         rcommandargs = request.POST.get('rcommandargs')
 
+        context['system'] = system
+        context['rcommand'] = rcommand
+        context['jobq'] = jobq
+        context['numcores'] = numcores
+        context['numnodes'] = numnodes
+        context['estrun'] = estrun
+        context['allocnum'] = allocnum
+        context['binary'] = binary
+        context['addfiles'] = addfiles
+        context['modules'] = modules
+        context['rcommandargs'] = rcommandargs
+
         if not rcommand:
-            context = {"run_command_error": "Command cannot be blank"}
+            context["run_command_error"] = "Command cannot be blank"
             return render(request, 'iptsite/run.html', context, content_type='text/html')
         if not jobq:
-            context = {"job_queue_error": "Job Queue cannot be blank"}
+            context["job_queue_error"] = "Job Queue cannot be blank"
             return render(request, 'iptsite/run.html', context, content_type='text/html')
         if not numcores:
-            context = {"num_cores_error": "Number of Cores cannot be blank"}
+            context["num_cores_error"] = "Number of Cores cannot be blank"
             return render(request, 'iptsite/run.html', context, content_type='text/html')
         if not numnodes:
-            context = {"num_nodes_error": "Number of Nodes cannot be blank"}
+            context["num_nodes_error"] = "Number of Nodes cannot be blank"
             return render(request, 'iptsite/run.html', context, content_type='text/html')
-        if not estrun:
-            context = {"est_run_error": "Estimated Job Runtime cannot be blank"}
-            return render(request, 'iptsite/run.html', context, content_type='text/html')
-        if not allocnum:
-            context = {"alloc_num_error": "Allocation Number cannot be blank"}
-            return render(request, 'iptsite/run.html', context, content_type='text/html')
-        if not bin:
-            context = {"binary_error": "Binary cannot be blank"}
+        # if not estrun:
+        #     context["est_run_error"] = "Estimated Job Runtime cannot be blank"
+        #     return render(request, 'iptsite/run.html', context, content_type='text/html')
+        # if not allocnum:
+        #     context = {"alloc_num_error": "Allocation Number cannot be blank"}
+        #     return render(request, 'iptsite/run.html', context, content_type='text/html')
+        if not binary:
+            context["binary_error"] = "Binary cannot be blank"
             return render(request, 'iptsite/run.html', context, content_type='text/html')
         # if not run_additional_files:
         # context = {"run_additional_files_error": ""}
 
-        if not rcommandargs:
-            context = {"run_command_args": "Command Args cannot be blank"}
+        # if not rcommandargs:
+        #     context = {"run_command_args": "Command Args cannot be blank"}
+        #     return render(request, 'iptsite/run.html', context, content_type='text/html')
+        binary_path = format_path(binary)
+        binary = 'agave://{}/{}/{}'.format(AGAVE_STORAGE_SYSTEM_ID, user_name, binary_path)
+
+        job_dict = {
+            "name": "{}.run.ipt".format(user_name),
+            # "appId": settings.RUN_APP_VERSION,
+            "inputs": {
+                "binary": binary,
+            },
+            "nodeCount": numnodes,
+            "processorsPerNode": numcores,
+            "archive": True,
+            "archiveSystem": AGAVE_STORAGE_SYSTEM_ID,
+            "archivePath": '{}/jobs/{}/run-{}-${{JOB_ID}}'.format(
+                user_name,
+                datetime.now().strftime('%Y-%m-%d'),
+                system),
+            "parameters": {
+                "command": rcommand,
+                "batchQueue": jobq,
+                "processorsPerNode": numcores,
+                "nodeCount": numnodes,
+            }
+        }
+
+        try:
+            job_dict['appId'] = SYSTEMS[system]['run']['app']
+        except KeyError:
+            logger.error('Build app not found for {}'.format(system))
+
+        if addfiles:
+            addfiles.rstrip(',')
+            supplemental_files = []
+            files = addfiles.split(',')
+            for f in files:
+                f=f.strip()
+                f=format_path(f)
+                supplemental_files.append('agave://{}/{}/{}'.format(AGAVE_STORAGE_SYSTEM_ID, user_name, f))
+            job_dict['inputs']['supplemental-files'] = supplemental_files
+        if modules:
+            modules_list = []
+            mods = modules.split(',')
+            for m in mods:
+                m=m.strip()
+                modules_list.append(m)
+            job_dict['parameters']['modules'] = modules_list
+        if rcommandargs:
+            job_dict['parameters']['args'] = rcommandargs
+
+        ag = get_agave_client_session(request)
+
+        try:
+            # submit job dictionary
+            logger.info('Job Submission Body: {}'.format(job_dict))
+            response = ag.jobs.submit(body=job_dict)
+            logger.info('Job Submission Response: {}'.format(response))
+            messages.success(request, 'Job {} has been submitted.'.format(response.id))
+            return HttpResponseRedirect('run')
+        except Exception as e:
+            err_resp = e.response.json()
+            err_resp['status_code'] = e.response.status_code
+            logger.warning(err_resp)
+            messages.error(request, "Error submitting job: {}, {}".format(e, e.response.content))
             return render(request, 'iptsite/run.html', context, content_type='text/html')
 
-        run_job = {  # "" : rcommand,
-                     "batchQueue": jobq,  # . . .  # "" : numcores,
-                     "nodeCount": numnodes,
-                     "maxRunTime": estrun,  # "" : allocnum,  # "" : binary,
-                     "args": rcommandargs,
-
-        }
     elif request.method == 'GET':
         return render(request, 'iptsite/run.html', context, content_type='text/html')
 
@@ -288,6 +476,22 @@ def login(request):
             # render login template with an error
             context = {"error": "Invalid username or password: {}".format(e)}
             return render(request, 'iptsite/login.html', context, content_type='text/html')
+
+        try:
+            #user needs to have permissions on both the system and app
+            service_ag = get_service_client()
+            service_ag.systems.updateRoleForUser(systemId=AGAVE_STORAGE_SYSTEM_ID, username=username, body={'role': 'USER'})
+            for sys in SYSTEMS:
+                service_ag.systems.updateRoleForUser(systemId=SYSTEMS[sys]['build']['system'], username=username, body={'role': 'USER'})
+                service_ag.systems.updateRoleForUser(systemId=SYSTEMS[sys]['run']['system'], username=username, body={'role': 'USER'})
+                service_ag.apps.updateApplicationPermissions(appId=SYSTEMS[sys]['build']['app'], body={'username':username, 'permission':'EXECUTE'})
+                service_ag.apps.updateApplicationPermissions(appId=SYSTEMS[sys]['run']['app'], body={'username':username, 'permission':'EXECUTE'})
+        except Exception as e:
+            err_resp = e.response.json()
+            err_resp['status_code'] = e.response.status_code
+            logger.warning('Error updating system/application permissions for {}: {}.'.format(username,err_resp))
+            messages.warning(request, "Error updating system/application permissions. You may not be able to submit jobs: {}, {}".format(e, e.response.content))
+
         # if we are here, we successfully generated an Agave client, so get the token data:
         access_token = ag.token.token_info['access_token']
         refresh_token = ag.token.token_info['refresh_token']
@@ -358,69 +562,111 @@ def compile(request):
     if not check_for_tokens(request):
         return redirect(reverse("login"))
     user_name = request.session.get("username")
-    context = {"admin": is_admin(user_name)}
+    context = {
+        "admin": is_admin(user_name),
+        "systems": SYSTEMS
+    }
 
     if request.method == 'POST':
 
+        system = request.POST.get('system')
         ccommand = request.POST.get('ccommand')
         driver = request.POST.get('driver')
         outfiles = request.POST.get('outfiles')
         commargs = request.POST.get('commargs')
+        addfiles = request.POST.get('addfiles')
+        modules = request.POST.get('modules')
+
+        context['system'] = system
+        context['ccommand'] = ccommand
+        context['driver'] = driver
+        context['outfiles'] = outfiles
+        context['commargs'] = commargs
+        context['addfiles'] = addfiles
+        context['modules'] = modules
 
         if not ccommand:
-            context = {"command_error": "Command cannot be blank"}
+            context["command_error"] = "Command cannot be blank"
             return render(request, 'iptsite/compile.html', context, content_type='text/html')
         if not driver:
-            context = {"driver_error": "Driver cannot be blank"}
+            context["driver_error"] = "Driver cannot be blank"
             return render(request, 'iptsite/compile.html', context, content_type='text/html')
         if not outfiles:
-            context = {"outfiles_error": "Output Files cannot be blank, please enter a.out or upload file"}
-            return render(request, 'iptsite/compile.html', context, content_type='text/html')
-        if not commargs:
-            context = {"commargs_error": "Args cannot be blank"}
+            context["outfiles_error"] = "Output Files cannot be blank, please enter a.out or upload file"
             return render(request, 'iptsite/compile.html', context, content_type='text/html')
 
-        app_version = os.environ.get("AGAVE_IPT_BUILD", "0.1.0")
+        driver_path = format_path(driver)
+        driver = 'agave://{}/{}/{}'.format(AGAVE_STORAGE_SYSTEM_ID, user_name, driver_path)
 
-        # ORIGINAL
         job_dict = {
-        "jobName": "ipt-build-{}",
-        "appId": "ipt-build-dev-{}".format(app_version),
-        "executionSystem": "dev.ipt.build.execute",
-        "parameters": {
-        "command": ccommand,
-        "output": outfiles,
-        "args": commargs,
-        "modules": "$MODULES_STR", }
+            "name": "{}.build.ipt".format(user_name),
+            # "appId": "ipt-build-{}-{}".format(system, settings.BUILD_APP_VERSION),
+            "inputs": {
+                "driver": driver,
+            },
+            "archive": True,
+            "archiveSystem": AGAVE_STORAGE_SYSTEM_ID,
+            "archivePath": '{}/jobs/{}/compile-{}-${{JOB_ID}}'.format(
+                user_name,
+                datetime.now().strftime('%Y-%m-%d'),
+                system),
+            "parameters": {
+                "command": ccommand,
+                "output": outfiles,
+            }
         }
 
+        try:
+            job_dict['appId'] = SYSTEMS[system]['build']['app']
+        except KeyError:
+            logger.error('Build app not found for {}'.format(system))
+
+        if addfiles:
+            addfiles.rstrip(',')
+            supplemental_files = []
+            files = addfiles.split(',')
+            for f in files:
+                f=f.strip()
+                f=format_path(f)
+                supplemental_files.append('agave://{}/{}/{}'.format(AGAVE_STORAGE_SYSTEM_ID, user_name, f))
+            job_dict['inputs']['supplemental-files'] = supplemental_files
+        if modules:
+            modules_list = []
+            mods = modules.split(',')
+            for m in mods:
+                m=m.strip()
+                modules_list.append(m)
+            job_dict['parameters']['modules'] = modules_list
+        if commargs:
+            job_dict['parameters']['args'] = commargs
+
+        # if job_dict['inputs']:
+        #     for key, value in six.iteritems(job_dict['inputs']):
+        #         parsed = urlparse(value)
+        #         if parsed.scheme:
+        #             job_dict['inputs'][key] = '{}://{}{}'.format(
+        #                 parsed.scheme, parsed.netloc, urllib.quote(parsed.path))
+        #         else:
+        #             job_dict['inputs'][key] = urllib.quote(parsed.path)
+
         ag = get_agave_client_session(request)
+
         try:
             # submit job dictionary
-            job = ag.jobs.submit(body=job_dict)  # getting 400, bad request
-            return render(request, 'iptsite/compile.html', content_type)
-
+            logger.info('Job Submission Body: {}'.format(job_dict))
+            response = ag.jobs.submit(body=job_dict)
+            logger.info('Job Submission Response: {}'.format(response))
+            messages.success(request, 'Job {} has been submitted.'.format(response.id))
+            return render(request, 'iptsite/compile.html', context)
         except Exception as e:
-            # import pdb; pdb.set_trace
-            context = {"compile_error": "Error submitting job: {}, {}".format(e, e.response.content)}
+            err_resp = e.response.json()
+            err_resp['status_code'] = e.response.status_code
+            logger.warning(err_resp)
+            messages.error(request, "Error submitting job: {}, {}".format(e, e.response.content))
             return render(request, 'iptsite/compile.html', context, content_type='text/html')
-
-        # modal should display immediately after submit is clicked and job is compiling in background
-        # check history tab for updated status on your job
-        #
 
     elif request.method == 'GET':
         return render(request, 'iptsite/compile.html', context, content_type='text/html')
-
-    # populate dictionary with values received from user form
-    """
-    try:
-        ag = get_agave_client(username, password)
-    except Exception as e:
-        # render login template with an error
-        context = {"error": "Invalid username or password: {}".format(e)}
-        return render(request, 'iptsite/login.html', context, content_type='text/html')
-    """
 
 
 def terminal(request):
@@ -431,25 +677,38 @@ def terminal(request):
         return redirect(reverse("login"))
     user_name = request.session.get("username")
     context = {"admin": is_admin(user_name)}
-
+    # if request.method == 'POST':
+    #     f = request.FILES['fileToUpload']
+    #     ag = get_service_client()
+    #     try:
+    #         rsp = ag.files.importData(systemId=AGAVE_STORAGE_SYSTEM_ID,
+    #                                        filePath='/{}'.format(user_name),
+    #                                        fileToUpload=f)
+    #         messages.success(request, 'Your file has been queued for upload and will be available momentarily.')
+    #     except Exception as e:
+    #         msg = "Error uploading file. Exception: {}".format(e)
+    #         logger.error(msg)
+    #         messages.error(request, msg)
     try:
         meta = check_for_terminal(request)
     except IPTModelError as e:
-        # todo - logging/exception handling
         error = "Got an IPTModelError: {}, {}".format(e.message, e)
+        logging.error(error)
         context["error"] = error
+        messages.error(request, error)
         return render(request, 'iptsite/terminal.html', context, content_type='text/html')
     if meta['status'] == TerminalMetadata.pending_status:
-        context["msg"] = "Please wait while your IPT terminal loads (status: {}).".format(meta['status'])
+        msg = "Please wait while your IPT terminal loads (status: {}).".format(meta['status'])
         context["url"] = ""
     elif meta['status'] == TerminalMetadata.ready_status:
-        context["msg"] = "Your IPT terminal is ready."
+        msg = "Your IPT terminal is ready."
         context["url"] = meta["url"]
     elif meta['status'] == TerminalMetadata.stopped_status:
-        context["msg"] = "Your IPT terminal was stopped. We have started a new IPT terminal for you." \
+        msg = "Your IPT terminal was stopped. We have started a new IPT terminal for you. " \
                          "Please wait while the terminal loads."
     else:
-        context["msg"] = "Meta record value: {}".format(meta)
+        msg = "Meta record value: {}".format(meta)
+    messages.info(request, msg)
     return render(request, 'iptsite/terminal.html', context, content_type='text/html')
 
 def webterm(request):
@@ -495,18 +754,37 @@ def create_account(request):
     # elif request.method == 'GET'
     # 	return render(request, 'iptsite/create_account.html', content_type='text/html')
 
+def download(request, path=''):
+    user_name = request.session.get("username")
+    # if path.startswith('/home/ipt/'):
+    #     path=path[10:]
+    path=format_path(path)
+    ag = get_service_client()
+    try:
+        rsp = ag.files.download(systemId=AGAVE_STORAGE_SYSTEM_ID,
+                               filePath='{}/{}'.format(user_name, path))
+    except Exception as e:
+        msg = "Error downloading file. Exception: {}".format(e)
+        logger.error(msg)
+        return HttpResponseServerError(msg)
 
+    response = HttpResponse(rsp.content)
+    response['content_type'] = 'application/force-download'
+    response['Content-Disposition'] = 'attachment; filename=%s' % path.rsplit('/',1)[-1]
+    return response
 
+def upload(request):
+    user_name = request.session.get("username")
+    f = request.FILES['fileToUpload']
+    ag = get_service_client()
+    try:
+        rsp = ag.files.importData(systemId=AGAVE_STORAGE_SYSTEM_ID,
+                                       filePath='/{}'.format(user_name),
+                                       fileToUpload=f)
+        logger.info(rsp)
+    except Exception as e:
+        msg = "Error uploading file. Exception: {}".format(e)
+        logger.error(msg)
+        return JsonResponse({'msg': msg}, status=500)
 
-
-
-
-
-
-
-
-
-
-
-
-
+    return JsonResponse({'msg': 'Your file has been queued for upload and will be available momentarily.'})

@@ -25,14 +25,16 @@
 #    - api_server (optional): The Agave api_server to use.
 #
 # Building the image:
-#    docker build -t jstubbs/ipt-actor -f Dockerfile-actor .
+#    docker build -t taccsciapps/ipt-actor -f Dockerfile-actor .
 #
 # Testing locally:
-#    docker run -it --rm -e MSG='{...}' jstubbs/ipt-actor
+#    docker run -it --rm -e MSG='{...}' taccsciapps/ipt-actor
 
 import os
 import sys
 import paramiko
+import random
+import string
 import StringIO
 
 from agavepy.actors import get_context
@@ -57,9 +59,9 @@ def audit_required_fields(context, message):
 
 def get_ssh_connection(context, message):
     """Create an SSH connection to the execution host."""
-    execution_ip = context.get('execution_ip', '129.114.17.73')
+    execution_ip = context.get('execution_ip', '129.114.17.63')
     if message.get('execution_ip'):
-        execution_ip = message.get('execution_ip', '129.114.17.73')
+        execution_ip = message.get('execution_ip', '129.114.17.63')
     execution_ssh_user = context.get('execution_ssh_user', 'root')
     if message.get('execution_ssh_user'):
         execution_ssh_user = message.get('execution_ssh_user')
@@ -83,7 +85,7 @@ def get_user_data(context, message):
         ipt_instance = message.get('ipt_instance')
     user_name = message.get('user_name')
 
-    container_name = '{}.{}.IPT'.format(user_name, ipt_instance)
+    container_name = '{}-{}-IPT'.format(user_name, ipt_instance)
     return user_name, container_name
 
 def get_agave_client(message):
@@ -94,8 +96,10 @@ def get_agave_client(message):
 
 def launch_terminal(user_name, container_name, conn, ip):
     """Launch an IPT terminal application container."""
+    password = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(27))
     command = 'cd /data/ipt/jobs/terminals/; ' \
-              './wrapper.sh {} /data/ipt/storage/{}'.format(container_name, user_name)
+              './wrapper.sh {} /gpfs/corral3/repl/utexas/ipt_storage/{} {}'.format(container_name, user_name, password)
+    print("command: {}".format(command))
     ssh_stdin, ssh_stdout, ssh_stderr = conn.exec_command(command)
     print("ssh connection made and command executed")
     # TODO - parse standard error to ensure command was successful.
@@ -103,19 +107,20 @@ def launch_terminal(user_name, container_name, conn, ip):
     print("st out from command: {}".format(st_out))
     #
     try:
-        port = st_out.split('0.0.0.0:')[1]
+        # port = st_out.split('0.0.0.0:')[1]
+        port = st_out.splitlines()[1]
     except IndexError:
         print("There was an IndexError parsing the standard out of the terminal launch for the port. "
               "Standard out was: {}".format(st_out))
         return ""
     print("got a port: {}".format(port))
-    url = "https://{}:{}/test".format(ip, port).replace('\n', '')
+    url = "https://{}:{}/{}".format('ipt-compute.tacc.cloud', port, password).replace('\n', '')
     print("returning url: {}".format(url))
     return url
 
 def stop_terminal(container_name, conn):
     """Stop and remove an IPT terminal application container."""
-    command = 'docker rm -f {}'.format(container_name)
+    command = 'docker service rm {}'.format(container_name)
     _, ssh_stdout, ssh_stderr = conn.exec_command(command)
 
 def get_terminal_status(container_name, conn):

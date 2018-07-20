@@ -1,0 +1,88 @@
+{
+    "id" : "ipt.run.ls5",
+    "name" : "Lonestar SLURM Execution Host",
+    "status" : "UP",
+    "type" : "EXECUTION",
+    "description" : "Lonestar 5 provides 1252 twenty-four core general compute nodes (for a total of 30,000 processor cores), 16 GPU nodes, and 10 large memory nodes. The system is configured with over 80 TB of memory and 5PB of disk storage, and has a peak performance of 1.2PF.",
+    "site" : "ipt.tacc.utexas.edu",
+    "public" : true,
+    "executionType" : "HPC",
+    "scheduler" : "SLURM",
+    "environment" : null,
+    "startupScript" : "./bashrc",
+    "maxSystemJobs" : 50,
+    "maxSystemJobsPerUser" : 4,
+    "rootDir":"/",
+    "workDir" : "/work/04868/ipt_icat/ls5",
+    "scratchDir" : "/scratch/04868/ipt_icat",
+    "queues" : [
+      {
+        "name" : "normal",
+        "default" : false,
+        "maxJobs" : 50,
+        "maxUserJobs" : 10,
+        "maxNodes" : 171,
+        "maxProcessorsPerNode" : 4104,
+        "maxRequestedTime" : "48:00:00",
+        "maxMemoryPerNode" : "64GB"
+      },
+      {
+        "name" : "development",
+        "default" : false,
+        "maxJobs" : 1,
+        "maxUserJobs" : 1,
+        "maxNodes" : 11,
+        "maxProcessorsPerNode" : 264,
+        "maxRequestedTime" : "02:00:00",
+        "maxMemoryPerNode" : "64GB"
+      },
+      {
+        "name" : "gpu",
+        "default" : false,
+        "maxJobs" : 4,
+        "maxUserJobs" : 2,
+        "maxNodes" : 4,
+        "maxProcessorsPerNode" : 40,
+        "maxRequestedTime" : "24:00:00",
+        "maxMemoryPerNode" : "64GB"
+      },
+      {
+        "name" : "vis",
+        "default" : false,
+        "maxJobs" : 4,
+        "maxUserJobs" : 2,
+        "maxNodes" : 4,
+        "maxProcessorsPerNode" : 40,
+        "maxRequestedTime" : "08:00:00",
+        "maxMemoryPerNode" : "64GB"
+      }
+    ],
+    "login" : {
+      "host" : "ls5.tacc.utexas.edu",
+      "port" : 22,
+      "protocol" : "SSH",
+      "rootDir":"/",
+      "scratchDir": "/scratch/04868/ipt_icat",
+      "workDir": "/home1/04868/ipt_icat/ls5",
+      "homeDir" : "/work/04868/ipt_icat/ls5",
+      "auth" : {
+        "username":"ipt_icat",
+        "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbb3N4yrfKc6Shcx/MIa2nmfvhmjP/B5prgLHwPW5t8nqc+0sSJaW6o6wIenQjCkzY4SOx6ls3bs8UtNyBn/ZLm1FXhQQBp1oCGv6L9I9nUTf9+HPwKUaGctC7+DlI5puh0a2tUozvq8dIVh9T0MMCad1lWqNMXTzAJI2cIwky4KJTCFU6v82ehaeldLYcW83WfRxvkyVpgzWGAasX7JO1cHPq5nFJq6FtS+qffwZohU4QpPPB/BevZK0DYil5gpzVvTHjJV1exRGJAosEomIRho5ulIenNGSGqO20dVUJwf3wnFFoGVRLNKkSFn2Q9JPV83AsLcXoVh4eh1oLac2H ipt_icat@staff.ls5.tacc.utexas.edu\n",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+      }
+    },
+    "storage" : {
+      "host" : "ls5.tacc.utexas.edu",
+      "port" : 22,
+      "protocol" : "SFTP",
+      "rootDir" : "/",
+      "homeDir" : "/work/04868/ipt_icat/ls5",
+      "auth" : {
+        "username":"ipt_icat",
+        "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbb3N4yrfKc6Shcx/MIa2nmfvhmjP/B5prgLHwPW5t8nqc+0sSJaW6o6wIenQjCkzY4SOx6ls3bs8UtNyBn/ZLm1FXhQQBp1oCGv6L9I9nUTf9+HPwKUaGctC7+DlI5puh0a2tUozvq8dIVh9T0MMCad1lWqNMXTzAJI2cIwky4KJTCFU6v82ehaeldLYcW83WfRxvkyVpgzWGAasX7JO1cHPq5nFJq6FtS+qffwZohU4QpPPB/BevZK0DYil5gpzVvTHjJV1exRGJAosEomIRho5ulIenNGSGqO20dVUJwf3wnFFoGVRLNKkSFn2Q9JPV83AsLcXoVh4eh1oLac2H ipt_icat@staff.ls5.tacc.utexas.edu\n",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+      }
+    }
+}

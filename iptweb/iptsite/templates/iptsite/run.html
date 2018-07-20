@@ -1,145 +1,187 @@
 {% extends 'base.html' %}
 
-{% block activetab %}
-<div class="container">
-    <ul class="nav nav-tabs">
-        <li><a data-toggle="tab" href="terminal">Terminal</a></li>
-        <li><a data-toggle="tab" href="compile">Compile</a></li>
-        <li class="active"><a data-toggle="tab" href="run">Run</a></li>
-        <li><a data-toggle="tab" href="history">Job History</a></li>
-        <li><a data-toggle="tab" href="help">Help</a></li>
-{% if admin %}
-        <li><a data-toggle="tab" href="admin">Admin</a></li>
-{% endif %}
-        {% endblock %}
+{% block header %}
+<h1>Launching a Run Job</h1>
+{% endblock %}
 
-        {% block body %}
-        <!-- Run Tab -->
-        {% block header %}
-        <h1>Launching a Run Job</h1>
-        {% endblock %}
-        {% block headersum %}
-        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-        {% endblock %}
-        <div id="compile" class="tab-pane fade in active">
-            <div class="container">
-                <form action="#">
-                    {% block form-group %}
-                    <div class="form-group" method="POST" action="/run">{% csrf_token %}
-                        <div class="form-group">
-                            <label for="rcommand">Command:</label>
-                            <input type="text" class="form-control" id="rcommand"
-                                   placeholder="Enter ibrun or ./nameofexecutable" name="rcommand">
-                            {% if run_command_error %}
-                            <div class="error">
-                                <p>There was an error: {{ run_command_error }}</p>
-                            </div>
-                            {% endif %}
+{% block headersum %}
+<p>This form will guide you towards composing the command for running your serial or parallel programs on TACC/XSEDE resources. Please upload all the input or data files required by your executable/binary.</p>
+<p> The output from your jobs can be found in <strong>/home/ipt/jobs/{date}/run-{system}-{job-id}</strong></p>
+{% endblock %}
 
-                            <label for="jobq">Job Queue:</label>
-                            <input type="text" class="form-control" id="jobq"
-                                   placeholder="Enter the name of the queue. i.e. normal, dev, vis, etc." name="jobq">
-                            {% if job_queue_error %}
-                            <div class="error">
-                                <p>There was an error: {{ job_queue_error }}</p>
-                            </div>
-                            {% endif %}
-
-                            <label for="numcores">Number of cores:</label>
-                            <select class="form-control" type="number" id="numcores" name="numcores">
-                                <option value="disabled" disabled>Select One</option>
-                                <option value="text">1</option>
-                                <option value="text">2</option>
-                                <option value="text">3</option>
-                                <option value="text">4</option>
-                                <option value="text">5</option>
-                                <option value="text">6</option>
-                                <option value="text">7</option>
-                                <option value="text">8</option>
-                                <option value="text">9</option>
-                                <option value="text">10</option>
-                                <option value="text">11</option>
-                                <option value="text">12</option>
-                                <option value="text">13</option>
-                                <option value="text">14</option>
-                                <option value="text">15</option>
-                                <option value="text">16</option>
-                            </select>
-                            {% if num_cores_error %}
-                            <div class="error">
-                                <p>There was an error: {{ num_cores_error }}</p>
-                            </div>
-                            {% endif %}
-
-                            <label for="numnodes">Number of Nodes:</label>
-                            <input type="text" class="form-control" id="numnodes"
-                                   placeholder="Enter number of nodes. if OpenMP or CUDA: Enter 1, if MPI or Hybrid: You may enter 1+"
-                                   name="numnodes">
-                            {% if num_nodes_error %}
-                            <div class="error">
-                                <p>There was an error: {{ num_nodes_error }}</p>
-                            </div>
-                            {% endif %}
-
-                            <label for="estrun">Estimated Job Runtime:</label>
-                            <input type="time" class="form-control" id="estrun"
-                                   placeholder="Enter Hours:Minutes:Seconds" name="estrun">
-                            {% if est_run_error %}
-                            <div class="error">
-                                <p>There was an error: {{ est_run_error }}</p>
-                            </div>
-                            {% endif %}
-
-                            <label for="allocnum">Allocation Number:</label>
-                            <input type="text" class="form-control" id="allocnum"
-                                   placeholder="Enter allocation number if estimated job runtime is greater than half hour"
-                                   name="allocnum">
-                            {% if alloc_num_error %}
-                            <div class="error">
-                                <p>There was an error: {{ alloc_num_error }}</p>
-                            </div>
-                            {% endif %}
-
-                            <label for="bin">Binary:</label>
-                            <input type="text" class="form-control" id="bin" placeholder="Enter binary file name"
-                                   name="bin">
-                            {% if binary_error %}
-                            <div class="error">
-                                <p>There was an error: {{ binary_error }}</p>
-                            </div>
-                            {% endif %}
-                            <div class="form-group">
-                                <label for="run_additional_files">Additional Files:</label>
-                                <!-- 			    <input type="addfiles" class="form-control" id="addfiles" placeholder="Add additional files or folders" name="addfiles"> -->
-                                <!-- 			</div> -->
-                                <div>
-			    <span id="fileselector">
-			        <label class="btn btn-default" for="upload-file-selector">
-                        <input id="upload-file-selector" type="file">
-                        <i class="fa_icon icon-upload-alt margin-correction"></i>Upload
-                    </label>
-			    </span>
-                                </div>
-                                <label for="rcommandargs">Command Args:</label>
-                                <input type="text" class="form-control" id="rcommandargs" placeholder="args"
-                                       name="rcommandargs">
-                                {% if run_command_args_error %}
-                                <div class="error">
-                                    <p>There was an error: {{ run_command_args_error }}</p>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <h4>This is your command:</h4>
-                            {% for input in runinput %}
-                            <p>{{ input.rcommand }} {{input.bin}} {{input.rcommandargs}}</p>
-                            {% endfor %}
-                            <div class="text-right">
-                                <button type="submit" class="btn btn-default">Launch Run Job</button>
-                            </div>
-                        </div>
-                        {% endblock %}
-                </form>
+{% block body %}
+  <div id="run" class="tab-pane fade in active">
+    {% block form-group %}
+    <div class="container">
+        <form method="POST" action="/run">{% csrf_token %}
+            <div class="form-group">
+                <label for="system">System:</label>
+                <select class="form-control" id="system" name="system" onchange="updateQueues()">
+                  {% for sys,val in systems.items %}
+                    <option value={{sys}} {% if system == sys %}selected{% endif %}>{{val.display_name}}</option>
+                  {% endfor %}
+                </select>
+                {% if system_error %}
+                <div class="error">
+                    <p>There was an error: {{ system_error }}</p>
+                </div>
+                {% endif %}
             </div>
-        </div>
-        {% endblock %}
+            <div class="form-group">
+                <label for="rcommand">Command:</label>
+                <input value="{{rcommand}}" type="text" class="form-control" id="rcommand"
+                       placeholder="Enter ibrun or ./nameofexecutable" name="rcommand" required>
+                {% if run_command_error %}
+                <div class="error">
+                    <p>There was an error: {{ run_command_error }}</p>
+                </div>
+                {% endif %}
+
+                <label for="jobq">Job Queue:</label>
+                <select class="form-control" id="jobq" name="jobq">
+                  <!-- {% if system == 'comet' %}
+                    {% for q in systems.comet.queues %}
+                      <option value={{q}} {% if jobq == q %}selected{% endif %}>{{q}}</option>
+                    {% endfor %}
+                  {% elif system == 'stampede' %}
+                    {% for q in systems.stampede.queues %}
+                      <option value={{q}} {% if jobq == q %}selected{% endif %}>{{q}}</option>
+                    {% endfor %}
+                  {% elif system == 'ls5' %}
+                    {% for q in systems.ls5.queues %}
+                      <option value={{q}} {% if jobq == q %}selected{% endif %}>{{q}}</option>
+                    {% endfor %}
+                  {% endif %} -->
+                </select>
+                {% if job_queue_error %}
+                <div class="error">
+                    <p>There was an error: {{ job_queue_error }}</p>
+                </div>
+                {% endif %}
+
+                <label for="numcores">Number of cores:</label>
+                <select class="form-control" type="number" id="numcores" name="numcores">
+                    <option value="disabled" disabled>Select One</option>
+                    <option value="1" {% if numcores == "1" %}selected{% endif %}>1</option>
+                    <option value="2" {% if numcores == "2" %}selected{% endif %}>2</option>
+                    <option value="3" {% if numcores == "3" %}selected{% endif %}>3</option>
+                    <option value="4" {% if numcores == "4" %}selected{% endif %}>4</option>
+                    <option value="5" {% if numcores == "5" %}selected{% endif %}>5</option>
+                    <option value="6" {% if numcores == "6" %}selected{% endif %}>6</option>
+                    <option value="7" {% if numcores == "7" %}selected{% endif %}>7</option>
+                    <option value="8" {% if numcores == "8" %}selected{% endif %}>8</option>
+                    <option value="9" {% if numcores == "9" %}selected{% endif %}>9</option>
+                    <option value="10" {% if numcores == "10" %}selected{% endif %}>10</option>
+                    <option value="11" {% if numcores == "11" %}selected{% endif %}>11</option>
+                    <option value="12" {% if numcores == "12" %}selected{% endif %}>12</option>
+                    <option value="13" {% if numcores == "13" %}selected{% endif %}>13</option>
+                    <option value="14" {% if numcores == "14" %}selected{% endif %}>14</option>
+                    <option value="15" {% if numcores == "15" %}selected{% endif %}>15</option>
+                    <option value="16" {% if numcores == "16" %}selected{% endif %}>16</option>
+                </select>
+                {% if num_cores_error %}
+                <div class="error">
+                    <p>There was an error: {{ num_cores_error }}</p>
+                </div>
+                {% endif %}
+
+                <label for="numnodes">Number of Nodes:</label>
+                <input value="{{numnodes}}" type="text" class="form-control" id="numnodes"
+                       placeholder="Enter number of nodes. if OpenMP or CUDA: Enter 1, if MPI or Hybrid: You may enter 1+"
+                       name="numnodes" required>
+                {% if num_nodes_error %}
+                <div class="error">
+                    <p>There was an error: {{ num_nodes_error }}</p>
+                </div>
+                {% endif %}
+
+                <!-- <label for="estrun">Estimated Job Runtime:</label>
+                <input value="{{estrun}}" type="time" class="form-control" id="estrun"
+                       placeholder="Enter Hours:Minutes:Seconds" name="estrun" required>
+                {% if est_run_error %}
+                <div class="error">
+                    <p>There was an error: {{ est_run_error }}</p>
+                </div>
+                {% endif %} -->
+
+                <!-- <label for="allocnum">Allocation Number:</label>
+                <input type="text" class="form-control" id="allocnum"
+                       placeholder="Enter allocation number if estimated job runtime is greater than half hour"
+                       name="allocnum">
+                {% if alloc_num_error %}
+                <div class="error">
+                    <p>There was an error: {{ alloc_num_error }}</p>
+                </div>
+                {% endif %} -->
+
+                <label for="binary">Binary:</label>
+                <input value="{{binary}}" type="text" class="form-control" id="binary" placeholder="Enter binary file name"
+                       name="binary" required>
+                {% if binary_error %}
+                <div class="error">
+                    <p>There was an error: {{ binary_error }}</p>
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="addfiles">Additional Files:</label>
+                    <input value="{{addfiles}}" type="addfiles" class="form-control" id="addfiles"
+                           placeholder="Add additional files or folders separated by commas" name="addfiles">
+                </div>
+                <div class="form-group">
+                    <label for="modules">Modules:</label>
+                    <input type="modules" class="form-control" id="modules"
+                           placeholder="Add modules to load separated by commas" name="modules">
+                   {% if modules_error %}
+                   <div class="error">
+                       <p>There was an error: {{ modules }}</p>
+                   </div>
+                   {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="rcommandargs">Command Args:</label>
+                    <input value="{{rcommandargs}}" type="text" class="form-control" id="rcommandargs" placeholder="args"
+                           name="rcommandargs">
+                    {% if run_command_args_error %}
+                    <div class="error">
+                        <p>There was an error: {{ run_command_args_error }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- <div>
+                  <h4>This is your command:</h4>
+                  <p id="fullCommand"></p>
+                </div> -->
+                <div class="text-right">
+                    <button type="submit" class="btn btn-default">Launch Run Job</button>
+                </div>
+            </div>
+                {% endblock %}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    function updateQueues(){
+      var system = $('#system').val();
+      var queues = $('#jobq')
+      queues.empty()
+
+      if (system == 'stampede') {
+        {% for q in systems.stampede.queues %}
+          queues.append('<option value={{q}} {% if jobq == q %}selected{% endif %}>{{q}}</option>')
+        {% endfor %}
+      } else if (system == 'ls5') {
+        {% for q in systems.ls5.queues %}
+          queues.append('<option value={{q}} {% if jobq == q %}selected{% endif %}>{{q}}</option>')
+        {% endfor %}
+      } else if (system == 'comet') {
+        {% for q in systems.comet.queues %}
+          queues.append('<option value={{q}} {% if jobq == q %}selected{% endif %}>{{q}}</option>')
+        {% endfor %}
+      }
+    }
+    updateQueues();
+  </script>
+{% endblock %}

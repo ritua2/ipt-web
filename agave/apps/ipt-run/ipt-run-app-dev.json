@@ -1,0 +1,173 @@
+{
+  "version": "0.1.0",
+  "helpURI": "https://ipt.tacc.utexas.edu",
+  "label": "Run IPT output",
+  "defaultNodeCount": 1,
+  "defaultMaxRunTime": "01:00:00",
+  "shortDescription": "Run IPT generated source code.",
+  "longDescription": "Run IPT generated source code.",
+  "executionSystem": "dev.ipt.run.execute",
+  "executionType": "CLI",
+  "parallelism": "SERIAL",
+  "deploymentPath": "apps/ipt-run",
+  "deploymentSystem": "dev.ipt.cloud.storage",
+  "templatePath": "ipt-run-wrapper.sh",
+  "testPath": "test/test.sh",
+  "tags": [
+    "execute",
+    "run",
+    "ipt"
+  ],
+  "ontology": [],
+  "modules": [],
+  "inputs": [
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "binary file name"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "default": "agave://dev.ipt.cloud.storage//data/test.txt"
+      },
+      "id": "binary"
+    },
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "Any additional files required for compilation."
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": -1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": false
+      },
+      "id": "supplemental-files"
+    }
+  ],
+  "parameters": [
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "The run command"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+      },
+      "id": "command"
+    },
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "Job queue to use"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+        "default": "normal"
+      },
+      "id": "batchQueue"
+    },
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "number of cores to use"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "number"
+      },
+      "id": "processorsPerNode"
+    },
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "number of nodes to use"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "number"
+      },
+      "id": "nodeCount"
+    },
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "runtime"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string"
+      },
+      "id": "runtime"
+    },
+    {
+      "details": {
+        "showArgument": false,
+        "repeatArgument": false,
+        "label": "additional arg string to pass to the compiler"
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "ontology": [],
+        "maxCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "string"
+      },
+      "id": "args"
+    }
+  ],
+  "checkpointable": false,
+  "name": "ipt-run-dev"
+}

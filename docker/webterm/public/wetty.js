@@ -1,6 +1,6 @@
 
 var term;
-var socket = io(location.origin, {path: '/test/wetty/socket.io'})
+var socket = io(location.origin, {path: '/%WETTY_PASSWORD%/wetty/socket.io'})
 var buf = '';
 
 function Wetty(argv) {

@@ -1,4 +1,4 @@
-# Image: jstubbs/ipt-actor
+# Image: taccsciapps/ipt-actor
 # The actor used to launch IPT terminals from the web application.
 from abacosamples/base-ubu
 

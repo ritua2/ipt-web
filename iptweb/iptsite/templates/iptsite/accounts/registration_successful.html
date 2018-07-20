@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load staticfiles bootstrap3 %}
+
+{% block title %}Account Registration Received{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1 class="headline headline-research">Register an Account</h1>
+
+        <p class="lead alert alert-success">Congratulations! Your account registration has been received.</p>
+        <div class="jumbotron">
+            <p class="lead">
+                Before you can log in to IPT you will need to complete your
+                account activation. Follow the steps below to activate your account:
+            </p>
+            <ol class="lead">
+                <li>Look for an account activation email at the email address you provided.</li>
+                <li>Follow the link in the email to activate your account.</li>
+                <li>Provide the username and password you chose at registration to activate your account.</li>
+            </ol>
+
+            <p class="lead">
+                That's it! Thank you for registering for IPT.
+            </p>
+
+            <!-- <div class="text-center">
+                <a href={% url 'login' %} class="btn btn-primary btn-lg">Go to DesignSafe-CI Home</a>
+            </div> -->
+        </div>
+    </div>
+{% endblock %}

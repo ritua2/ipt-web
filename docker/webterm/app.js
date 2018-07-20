@@ -113,7 +113,8 @@ io.on('connection', function(socket){
     }
 
     var term;
-    if (process.getuid() == 0) {
+    // check if this is the special ipt user uid:
+    if (process.getuid() == 809892) {
         term = pty.spawn('/bin/bash', [], {
             name: 'xterm-256color',
             cols: 80,

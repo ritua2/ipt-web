@@ -1,6 +1,8 @@
 <!-- User Login page -->
 {% extends 'base.html' %}
 
+{% load staticfiles %}
+
 {% block body %}
 
 <div class="row">
@@ -59,26 +61,16 @@
                         <!-- Password Reset -->
                         <div>
                             <div id="gam-forgot-password" class="card--message col-lg-8 col-lg-offset-3">
-                                Forgot your password? <a href="#" id="recoverPassword"
+                                Forgot your password? <a href="{% url 'accounts:password_reset' %}" id="recoverPassword"
                                                          class="link link-grayDarkest link-underline"
                                                          alt="Reset password">Click here</a>
                             </div>
                         </div>
                     </fieldset>
                 </form>
-                <form class="form-horizontal" method="POST" action="/create_account">{% csrf_token %}
-                    <!-- Create Account Button -->
-                    <div class="form-group">
-                        <div class="col-lg-8 col-lg-offset-2">
-                            <div class="card--buttons">
-                                <button type="submit" id="signin-btn" data-behavior="submit" name="CreateAccount"
-                                        class="btn btn-primary btn-lg btn-block">
-                                    Create Account
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                <a href="{% url 'accounts:register' %}">
+                    <button class="btn btn-primary btn-lg btn-block"> Create Account </button>
+                </a>
             </div>
         </div>
     </div>

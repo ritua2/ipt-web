@@ -3,13 +3,14 @@
   "storage": {
     "protocol": "SFTP",
     "proxyTunnel": "NO",
-    "host": "129.114.19.85",
-    "rootDir": "/data/ipt",
+    "host": "129.114.60.39",
+    "rootDir": "/gpfs/corral3/repl/utexas/ipt_storage",
+    "homeDir": "/",
     "port": 22,
     "auth": {
       "type": "SSHKEYS",
-      "username": "root",
-      "publicKey": "",
+      "username": "rauta",
+      "publicKey":"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCxR5NhMYg19AzTrHmsLwof5q9DB3x+zIh22Ka4Xa86C+adVJ4glDEZ6eC6tiAYbzRXXdTZNi4E6iE997WdwizMP/8DrXwy0yRuQf96Ky+2pf6aflyPOevuzxdS9DjmPW+WdnyW4IBV7g8QM6T0bthopq4/EKdv8uSHZDHJI4MHi39b43V+e+nTB/+sx/ELBKSrmfySRnfwLuC6hnzwZwq4yybn+E4wz4iFuENKk2KmHkrMOVAglxb/WAQw0AQ53PdAOn3VA9E5VK5eYxecir0Pfza3xO6MnVkpUptrRZZjRtPKmI39mVz/AMfpCWUSsVDS6criWbAD9Q5t3YzPoV4WYzh46liqSHADY3qpjAkfYmNXBtJepNFmVTt6Y8XCphgWVPpZrzecQr9wDtAhGAAoWIMD0ZefUlws1i/pO1MSUOBnTYHVYqDaOIEYu9cJQBQqCfHpjBh2rcr75r6cLM7RqQ1mkVRDAZZNUavoJ1ZkQ71gADDYeYWTpiVN9RuaWwPJfEXj6Nqh1w6PljAYA5f7gFa+pLUxXVRmqG8yf126e6nmFPvsAekM9ASB67RHCt9Ti+k3r08DxPYFXG6dsZHfW8eL2OkEgV6ODXydiZ/B/W3iJiBon4bQx+7KmlXfZSz9maYox2dAwkLDg93KXZprBO/nNd171ggyvt8RI5UYzw== jenkins@jenkins2",
       "privateKey": ""
     }
   },

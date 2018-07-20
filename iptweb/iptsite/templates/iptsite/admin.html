@@ -1,60 +1,47 @@
 {% extends 'base.html' %}
 
-{% block activetab %}
-<div class="container">
-    <ul class="nav nav-tabs">
-        <li><a data-toggle="tab" href="terminal">Terminal</a></li>
-        <li><a data-toggle="tab" href="compile">Compile</a></li>
-        <li><a data-toggle="tab" href="run">Run</a></li>
-        <li><a data-toggle="tab" href="history">Job History</a></li>
-        <li><a data-toggle="tab" href="help">Help</a></li>
-{% if admin %}
-        <li class="active"><a data-toggle="tab" href="admin">Admin</a></li>
-{% endif %}
-        {% endblock %}
+{% block header %}
+<h1>Current IPT Terminals</h1>
+{% endblock %}
+{% block headersum %}
+{% endblock %}
 
-        {% block body %}
-        <!-- Admin Tab -->
-        {% block header %}
-        <h1>Current IPT Terminals</h1>
-        {% endblock %}
-        {% block headersum %}
-        {% endblock %}
-        {% if error %}
-        <div class="error">
-            <p>There was an error: {{ error }}</p>
-        </div>
-        {% endif %}
-        <table class="table table-hover">
-            <tr>
-                <thead>
-                <th>User</th>
-                <th>Status</th>
-                <th>URL</th>
-                <th>Metadata UUID</th>
-                <th>Metadata Key</th>
-                <th>Action</th>
-                </thead>
-            </tr>
-            {% for term in terminals %}
-            <tr>
-                <td>{{ term.user }}</td>
-                <td>{{ term.status }}</td>
-                <td>{{ term.url }}</td>
-                <td>{{ term.uuid }}</td>
-                <td>{{ term.name }}</td>
-                <td>
-                {% if term.action %}
-                <form method="post" action="/admin">{% csrf_token %}
-                  <input type="hidden" class="form-control" name="user" value="{{ term.user }}">
-                    <input type="hidden" class="form-control" name="uuid" value="{{ term.uuid }}">
-                    <input type="hidden" class="form-control" name="command" value="{{ term.action }}">
-                    <input type="submit" value="{{ term.submit }}">
-                </form>
-                {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+{% block body %}
+    {% if error %}
+    <div class="error">
+        <p>There was an error: {{ error }}</p>
+    </div>
+    {% endif %}
+    <table class="table table-hover">
+        <tr>
+            <thead>
+            <th>User</th>
+            <th>Status</th>
+            <th>URL</th>
+            <th>Metadata UUID</th>
+            <th>Metadata Key</th>
+            <th>Action</th>
+            </thead>
+        </tr>
+        {% for term in terminals %}
+        <tr>
+            <td>{{ term.user }}</td>
+            <td>{{ term.status }}</td>
+            <td>{{ term.url }}</td>
+            <td>{{ term.uuid }}</td>
+            <td>{{ term.name }}</td>
+            <td>
+            {% if term.action %}
+            <form method="post" action="/admin">{% csrf_token %}
+              <input type="hidden" class="form-control" name="user" value="{{ term.user }}">
+                <input type="hidden" class="form-control" name="uuid" value="{{ term.uuid }}">
+                <input type="hidden" class="form-control" name="command" value="{{ term.action }}">
+                <input type="submit" value="{{ term.submit }}">
+            </form>
+            {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 {% endblock %}

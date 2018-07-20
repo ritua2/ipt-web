@@ -1,65 +1,110 @@
 {% extends 'base.html' %}
 
-{% block activetab %}
-<div class="container">
-    <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="terminal">Terminal</a></li>
-        <li><a data-toggle="tab" href="compile">Compile</a></li>
-        <li><a data-toggle="tab" href="run">Run</a></li>
-        <li><a data-toggle="tab" href="history">Job History</a></li>
-        <li><a data-toggle="tab" href="help">Help</a></li>
-{% if admin %}
-        <li><a data-toggle="tab" href="admin">Admin</a></li>
-{% endif %}
-        {% endblock %}
+{% block headersum %}
+<h1>Terminal</h1>
+<!-- This particular block template is only for a tab header.
+This block can be modified or removed completely, just be sure to remove the
+opening and closing "headersum" blocks.  -->
+{% endblock %}
 
-        {% block body %}
-        <!-- Terminal Tab -->
-        {% block header %}
-        <h1>Terminal</h1>
-        {% endblock %}
-        {% block headersum %}
-        <!-- This particular block template is only for a tab header.
-        This block can be modified or removed completely, just be sure to remove the
-        opening and closing "headersum" blocks.  -->
-        <h4>Our Terminal page is under construction. We appreciate your patience!</h4>
+{% block body %}
+  <div class="terminal">
+    {% if url %}
+      <iframe id="webterm" src="{{ url }}"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+    {% else %}
+      <iframe id="webterm" src=""  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+    {% endif %}
+  </div>
 
-        {% if error %}
-        <div class="error"> There was an error: {{ error }}</div>
-        {% endif %}
-
-        {% if msg %}
-        <div> {{ msg }}</div>
-        {% endif %}
+  <h1>File Upload</h1>
+  <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="fileToUpload">Upload Additional Files and they will show up in /home/ipt within your IPT terminal:</label>
+        <input type="file" class="form-control" id="fileToUpload"
+                       placeholder="Add additional files or folders" name="fileToUpload">
+    </div>
+    <div class="text-right">
+      <button type="submit" class="btn btn-default">Upload</button>
+    </div>
+  </form>
 
 
-        <!--iframe src="https://ipt-web.tacc.utexas.edu/webterm"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe-->
-        {% if url %}
-        <iframe id="webterm" src="{{ url }}"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
-        {% else %}
-        <iframe id="webterm" src=""  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
-        {% endif %}
-<script>
-    $(document).ready(function(){
-        src = document.getElementById('webterm').src;
-        if (src === "https://ipt-web.tacc.utexas.edu/terminal"){
-            updated_src = "";
-            while (updated_src === ""){
+  <h1>File Download</h1>
+  <form id="downloadForm" method="GET" action="/download" enctype="multipart/form-data">
+    {% csrf_token %}
+      <div class="form-group">
+          <label for="fileToDownload">Enter filepath/name for file to download:</label>
+          <input type="text" class="form-control" id="fileToDownload"
+                         placeholder="/home/ipt/<filepath>/<name>" name="fileToDownload">
+          <input type="hidden" name="action" value="download">
+      </div>
+      <div class="text-right">
+          <button type="submit" class="btn btn-default">Download</button>
+      </div>
+  </form>
+{% endblock %}
 
-                $.get("webterm",
-                function(data) {
-                    obj = JSON.parse(data);
-                    if (obj.url !== ""){
-                        updated_src = obj.url;
-                    }
-                });
+{% block scripts %}
+  <script>
+      $(document).ready(function(){
+          src = document.getElementById('webterm').src;
+          if (src === window.location.href){
+              getTerminalUrl(0) //start count at 0
+          }
+      });
+
+      async function sleep(ms = 0) {
+        return new Promise(r => setTimeout(r, ms));
+      }
+
+      var getTerminalUrl = function(count) {
+        $.get("webterm",
+        function(data) {
+            count += 1;
+            console.log(count, data)
+            if (data.url !== ""){
+                sleep(75)
+                webterm.src = data.url;
+                return;
+            } else if (count < 20){
+              getTerminalUrl(count)
             }
-            $('#webterm').src() = updated_src;
-        }
+        });
+      }
 
-    });
-</script>
+      $('#downloadForm').on('submit', function(event){
+          event.preventDefault();
+          $('#errorMsg').text('');
+          $.ajax({
+            url: window.location.origin + '/download/' + $('#fileToDownload').val(),
+          }).fail(function(xhr) {
+            $('#errorMsg').text($('#fileToDownload').val() + ' -- ' +xhr.responseText);
+          }).done(function(xhr) {
+            window.location = window.location.origin + '/download/' + $('#fileToDownload').val()
+          });
+      });
 
-        {% endblock %}
+      $('#uploadForm').on('submit', function(event){
+          event.preventDefault();
+          $('#errorMsg').text('');
+          var form = $('#uploadForm')[0]
+          var formData = new FormData(form);
 
-        {% endblock %}
+          $.ajax({
+            url: window.location.origin + '/upload',
+            data: formData,
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            success: function(xhr) {
+              $('<div class="alert alert-success alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
+              + xhr.msg +'</div>').insertBefore('.terminal')
+            }
+          }).fail(function(xhr) {
+            $('<div class="alert alert-danger alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
+            + xhr.responseJSON.msg +'</div>').insertBefore('.terminal')
+          });
+      });
+  </script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{
+  "appId": "ipt-run-dev-0.1.0",
+  "archive": true,
+  "archivePath": "username/archive/jobs",
+  "archiveSystem": "dev.ipt.cloud.storage",
+  "nodeCount": "",
+  "processorsPerNode": "",
+  "inputs": {
+    "binary": "agave://dev.ipt.cloud.storage//data/test.txt"
+  },
+  "name": "username.run.dev.ipt",
+  "parameters": {
+    "batchQueue": "",
+    "command": "",
+    "nodeCount": "",
+    "processorsPerNode": "",
+    "runtime": ""
+  }
+}

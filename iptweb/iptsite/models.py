@@ -1,6 +1,9 @@
 import json
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class IPTError(Exception):
     def __init__(self, msg):
@@ -22,11 +25,11 @@ def get_metatdata_name(username):
     :return:
     """
     instance = get_ipt_instance()
-    return '{}.{}.IPT'.format(username, instance)
+    return '{}-{}-IPT'.format(username, instance)
 
 def get_user(meta_name):
     """Return the username associated with a meta records name field."""
-    return meta_name.split('.')[0]
+    return meta_name.split('-')[0]
 
 def is_ipt_meta(m):
     """Check whether a metadata record, m, is associated with this IPT instance."""
@@ -37,8 +40,8 @@ def is_ipt_meta(m):
     name = value.get('name')
     if not name:
         return False
-    # the name field should have three parts separated by periods:
-    name_parts = name.split('.')
+    # the name field should have three parts separated by dashes:
+    name_parts = name.split('-')
     if not (len(name_parts) == 3):
         return False
     if not (name_parts[1] == get_ipt_instance()):
@@ -68,8 +71,8 @@ class TerminalMetadata(object):
         try:
             records = ag.meta.listMetadata(search={'name.eq': get_metatdata_name(self.user)})
         except Exception as e:
-            # todo - figure out logging
             msg = "Python exception trying to get the meta record for user {}. Exception: {}".format(self.user, e)
+            logger.error(msg)
             raise IPTModelError(msg)
         for m in records:
             if m['name'] == self.name:
@@ -86,8 +89,8 @@ class TerminalMetadata(object):
         try:
             m = ag.meta.addMetadata(body=json.dumps(d))
         except Exception as e:
-            # todo - figure out logging
             msg = "Exception trying to create the meta record for user {}. Exception: {}".format(self.user, e)
+            logger.error(msg)
             raise IPTModelError(msg)
         self.uuid = m['uuid']
         self.value = m['value']
@@ -110,8 +113,8 @@ class TerminalMetadata(object):
         try:
             m = ag.meta.updateMetadata(uuid=self.uuid, body=d)
         except Exception as e:
-            # todo - figure out logging
             msg = "Python exception trying to update the meta record for user {}. Exception: {}".format(self.user, e)
+            logger.error(msg)
             raise IPTModelError(msg)
         self.value = m['value']
 

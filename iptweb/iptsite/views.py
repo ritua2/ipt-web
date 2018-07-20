@@ -17,7 +17,12 @@ from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, FileResponse
 
 from models import is_ipt_meta, get_user, TerminalMetadata, IPTError, IPTModelError
-
+from django.core.files.uploadhandler import MemoryFileUploadHandler, TemporaryFileUploadHandler
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from zipfile import ZipFile
+import StringIO
+import shutil
+import json
 
 AGAVE_STORAGE_SYSTEM_ID = os.environ.get('AGAVE_STORAGE_SYSTEM_ID', 'dev.ipt.cloud.storage')
 
@@ -754,37 +759,154 @@ def create_account(request):
     # elif request.method == 'GET'
     # 	return render(request, 'iptsite/create_account.html', content_type='text/html')
 
+def foldertraverse(ag, completePath, user_name, fileList):
+    userfiles = ag.files.list(systemId=AGAVE_STORAGE_SYSTEM_ID, filePath=completePath)
+    for f in userfiles:
+	if(f.name!="."):
+	   newPath=f.path.replace('/{}'.format(user_name),"/home/ipt")
+	   if(f.format == "folder"):
+	       newPath+="/"
+	   fileList.append(newPath)
+    	   if(f.format == "folder"):
+    	       foldertraverse(ag, f.path, user_name, fileList)
+    return fileList
+
+@csrf_exempt
+def getdropdownvalues(request):
+    user_name = request.session.get("username")
+    print(user_name)
+
+    path='/{}'.format(user_name)
+    completePath=path
+    path=format_path(path)
+    ag = get_service_client()
+
+    try:
+    	finalfileList = foldertraverse(ag, completePath, user_name, [])
+    except Exception as e:
+        msg = "Error traversing folder structure. Exception: {}".format(e)
+        logger.error(msg)
+        return HttpResponseServerError(msg)
+    return HttpResponse(json.dumps({'fileList': finalfileList}),content_type="application/json")
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
 def download(request, path=''):
     user_name = request.session.get("username")
     # if path.startswith('/home/ipt/'):
     #     path=path[10:]
+    completePath=path.replace("/home/ipt",'/{}'.format(user_name))
     path=format_path(path)
     ag = get_service_client()
+
     try:
-        rsp = ag.files.download(systemId=AGAVE_STORAGE_SYSTEM_ID,
-                               filePath='{}/{}'.format(user_name, path))
+	if(path.endswith("/")):
+	    pathList=foldertraverse(ag, completePath, user_name, [])
+	    zipfile_paths=[]
+	    if os.path.exists('{}'.format(user_name)):
+		shutil.rmtree('{}'.format(user_name))
+	    for files in pathList:
+    	    	files=format_path(files)
+		if not(files.endswith("/")):
+		    rsp = ag.files.download(systemId=AGAVE_STORAGE_SYSTEM_ID,
+				filePath='{}/{}'.format(user_name, files))
+		directory = '{}/{}'.format(user_name, files).rsplit('/',1)[-2]
+		if not os.path.exists(directory):
+    		    os.makedirs(directory)
+		if not(files.endswith("/")):
+		    zipfile_paths.append('{}/{}'.format(user_name,files))
+		    with open('{}/{}'.format(user_name, files),'w') as fileFH:
+		        fileFH.write(rsp.content)
+
+	    s = StringIO.StringIO()
+	    with ZipFile(s,'w') as zip:
+	    	for filename in zipfile_paths:
+            	    zip.write(filename,filename.split('/',1)[1])
+
+	    response=HttpResponse(s.getvalue())
+	    response['content_type'] = 'application/zip'
+    	    response['Content-Disposition'] = 'attachment; filename=%s' % '{}.zip'.format(path.rsplit('/',2)[-2])
+	else:
+            rsp = ag.files.download(systemId=AGAVE_STORAGE_SYSTEM_ID,
+				filePath='{}/{}'.format(user_name, path))
+            response = HttpResponse(rsp.content)
+    	    response['content_type'] = 'application/force-download'
+    	    response['Content-Disposition'] = 'attachment; filename=%s' % path.rsplit('/',1)[-1]
     except Exception as e:
         msg = "Error downloading file. Exception: {}".format(e)
         logger.error(msg)
         return HttpResponseServerError(msg)
+    finally:
+	if os.path.exists('{}'.format(user_name)):
+	    shutil.rmtree('{}'.format(user_name))
 
-    response = HttpResponse(rsp.content)
-    response['content_type'] = 'application/force-download'
-    response['Content-Disposition'] = 'attachment; filename=%s' % path.rsplit('/',1)[-1]
+	if os.path.exists('{}.zip'.format(path.rsplit('/',2)[-2])):
+	    os.remove('{}.zip'.format(path.rsplit('/',2)[-2]))
     return response
 
-def upload(request):
-    user_name = request.session.get("username")
-    f = request.FILES['fileToUpload']
-    ag = get_service_client()
-    try:
-        rsp = ag.files.importData(systemId=AGAVE_STORAGE_SYSTEM_ID,
-                                       filePath='/{}'.format(user_name),
-                                       fileToUpload=f)
-        logger.info(rsp)
-    except Exception as e:
-        msg = "Error uploading file. Exception: {}".format(e)
-        logger.error(msg)
-        return JsonResponse({'msg': msg}, status=500)
+class CustomMemoryFileUploadHandler(MemoryFileUploadHandler):
+    def new_file(self, *args, **kwargs):
+        args = (args[0], args[1].replace('/', '___').replace('\\', '___')) + args[2:]
+        super(CustomMemoryFileUploadHandler, self).new_file(*args, **kwargs)
 
-    return JsonResponse({'msg': 'Your file has been queued for upload and will be available momentarily.'})
+class CustomTemporaryFileUploadHandler(TemporaryFileUploadHandler):
+    def new_file(self, *args, **kwargs):
+        args = (args[0], args[1].replace('/', '___').replace('\\', '___')) + args[2:]
+        super(CustomTemporaryFileUploadHandler, self).new_file(*args, **kwargs)
+
+@csrf_exempt
+def upload(request):
+    # replace upload handlers. This depends on FILE_UPLOAD_HANDLERS setting. Below code handles the default in Django 1.10
+    request.upload_handlers = [CustomMemoryFileUploadHandler(request), CustomTemporaryFileUploadHandler(request)]
+    return uploadView(request)
+
+
+def uploadView(request):
+    user_name = request.session.get("username")
+    checkRadio = request.POST.get('filefolder')
+    if(checkRadio == "file"):
+        f = request.FILES['fileToUpload']
+        ag = get_service_client()
+        try:
+            rsp = ag.files.importData(systemId=AGAVE_STORAGE_SYSTEM_ID,
+                                           filePath='/{}'.format(user_name),
+                                           fileToUpload=f)
+            logger.info(rsp)
+        except Exception as e:
+            msg = "Error uploading file. Exception: {}".format(e)
+            logger.error(msg)
+            return JsonResponse({'msg': msg}, status=500)
+
+        return JsonResponse({'msg': 'Your file has been queued for upload and will be available momentarily.'})
+    elif(checkRadio == "folder"):
+        filesFold = request.FILES.getlist('folderToUpload')
+        ag = get_service_client()
+        try:
+            for f in filesFold:
+                sp=(f.name).split("___")
+                f.name=sp[-1]
+                folderNames='/'.join(sp[0:len(sp)-1])
+                #filePath='/{}/{}'.format(user_name,folderNames)
+                ag.files.manage(systemId=AGAVE_STORAGE_SYSTEM_ID, 
+                                filePath='/{}'.format(user_name), 
+                                body={'action': 'mkdir', 
+                                'path': '/{}'.format(folderNames)})
+                rsp = ag.files.importData(systemId=AGAVE_STORAGE_SYSTEM_ID,
+                                               filePath='/{}/{}'.format(user_name,folderNames),
+                                               fileToUpload=f)
+                logger.info(rsp)
+        except Exception as e:
+            msg = "Error uploading file. Exception: {}".format(e)
+            logger.error(msg)
+            return JsonResponse({'msg': msg}, status=500)
+        return JsonResponse({'msg': 'Your file structure has been queued for upload and will be available momentarily.'})
+		
+		
+

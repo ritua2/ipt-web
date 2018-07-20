@@ -17,5 +17,7 @@ urlpatterns = [
     url(r'^admin$', views.admin, name='admin'),
     url(r'^download/(?P<path>.*)/?$', views.download, name='download'),
     url(r'^upload?$', views.upload, name='upload'),
+    url(r'^community/', include('messageBoard.urls')),
+    url(r'^getdropdownvalues$', views.getdropdownvalues, name='getdropdownvalues'),
     url(r'^$', views.login, name='login'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

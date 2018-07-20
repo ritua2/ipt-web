@@ -8,41 +8,70 @@ opening and closing "headersum" blocks.  -->
 {% endblock %}
 
 {% block body %}
+<table cellpadding="0" cellspacing="0" width="100%" height="350px">
+<tr>
+  <td width="75%">
   <div class="terminal">
     {% if url %}
-      <iframe id="webterm" src="{{ url }}"  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+      <iframe id="webterm" src="{{ url }}"  style="overflow:hidden; width:850px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
     {% else %}
-      <iframe id="webterm" src=""  style="overflow:hidden; width:1000px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
+      <iframe id="webterm" src=""  style="overflow:hidden; width:850px; height:500px; background: white; float:center; " allowtransparency="true"> Terminal Session Frame</iframe>
     {% endif %}
   </div>
-
-  <h1>File Upload</h1>
+  </td>
+  <td valign="top">
+  <a data-toggle="tooltip"  style="border-bottom:1px dotted #000;text-decoration: none;" title="Upload Additional Files and they will show up in /home/ipt within your IPT terminal."><h3>Upload File/Folder</h3></a>
   <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    <div class="form-group">
-        <label for="fileToUpload">Upload Additional Files and they will show up in /home/ipt within your IPT terminal:</label>
-        <input type="file" class="form-control" id="fileToUpload"
-                       placeholder="Add additional files or folders" name="fileToUpload">
+    <div id="myRadioGroup">
+    File upload <input type="radio" name="filefolder" checked="checked" value="file" />
+    Folder upload <input type="radio" name="filefolder" value="folder" />
+    <div id="file" class="desc">
+	    <div class="form-group">
+	        <input type="file" class="form-control" id="file"
+	                       placeholder="Add additional files or folders" name="fileToUpload" >
+	    </div>
     </div>
+    <div id="folder" class="desc">
+	    <div class="form-group">
+	        <input type="file" class="form-control" id="folder"
+	                       placeholder="Add additional files or folders" name="folderToUpload" webkitdirectory mozdirectory directory multiple>
+	    </div>
+    </div>
+	</div>
     <div class="text-right">
       <button type="submit" class="btn btn-default">Upload</button>
     </div>
   </form>
-
-
-  <h1>File Download</h1>
+  <br/><br/>
+  <br/><br/>
+ 
+  <a data-toggle="tooltip"  style="border-bottom:1px dotted #000;text-decoration: none;" title="Select file or folder to download. Folder path ends with a slash '/' "><h3>Download File/Folder </h3></a>
   <form id="downloadForm" method="GET" action="/download" enctype="multipart/form-data">
     {% csrf_token %}
       <div class="form-group">
-          <label for="fileToDownload">Enter filepath/name for file to download:</label>
-          <input type="text" class="form-control" id="fileToDownload"
-                         placeholder="/home/ipt/<filepath>/<name>" name="fileToDownload">
+	  <select id=fileToDownload>
+  	    <option value="">--Select--</option>
+	  </select>
           <input type="hidden" name="action" value="download">
       </div>
+      <table>
+	<td width="80%">
+      <div class="text-left">
+          <button id=refreshList type="button" class="btn btn-default">Refresh List</button>
+      </div>
+	</td>
+	<td align="right">
       <div class="text-right">
           <button type="submit" class="btn btn-default">Download</button>
       </div>
+	</td>
+      </table>
   </form>
+
+  </td>
+</tr>
+</table>
 {% endblock %}
 
 {% block scripts %}
@@ -52,6 +81,32 @@ opening and closing "headersum" blocks.  -->
           if (src === window.location.href){
               getTerminalUrl(0) //start count at 0
           }
+          $("#folder").hide();
+          $("input[name$='filefolder']").click(function() {
+          var test = $(this).val();
+
+           $("div.desc").hide();
+          $("#" + test).show();
+    	  });
+        $.ajax({
+            url: '/getdropdownvalues',
+            type: 'POST',
+	    dataType: "json",
+            success: function(data){
+	    drpDwnValue=data.fileList
+	    $.each( drpDwnValue, function( key, f ) {
+              $("#fileToDownload").append($('<option>', {
+    		value: f,
+    		text: f
+		}));
+	    });	
+
+           },
+            error: function(){
+                console.log("error in ajax call");
+            }
+        });
+
       });
 
       async function sleep(ms = 0) {
@@ -72,7 +127,7 @@ opening and closing "headersum" blocks.  -->
             }
         });
       }
-
+      
       $('#downloadForm').on('submit', function(event){
           event.preventDefault();
           $('#errorMsg').text('');
@@ -83,6 +138,29 @@ opening and closing "headersum" blocks.  -->
           }).done(function(xhr) {
             window.location = window.location.origin + '/download/' + $('#fileToDownload').val()
           });
+      });
+      $('#refreshList').click(function () {
+        $.ajax({
+            url: '/getdropdownvalues',
+            type: 'POST',
+	    dataType: "json",
+            success: function(data){
+	    drpDwnValue=data.fileList
+	    $('#fileToDownload').html('');
+	    $('#fileToDownload').append('<option value="">--Select--</option>');
+	    $.each( drpDwnValue, function( key, f ) {
+              $("#fileToDownload").append($('<option>', {
+    		value: f,
+    		text: f
+		}));
+	    });	
+
+           },
+            error: function(){
+                console.log("error in ajax call");
+            }
+        });
+
       });
 
       $('#uploadForm').on('submit', function(event){

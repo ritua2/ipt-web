@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'nocaptcha_recaptcha',
 
     'iptsite',
+    'messageBoard',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,7 @@
+{"appId": "ipt-build-stampede-0.1.0",
+ "archive": true,
+ "archivePath": "mlm55/archive",
+ "archiveSystem": "dev.ipt.cloud.storage",
+ "inputs": {"driver": "agave://ipt.cloud.storage/mlm55/circuit.c"},
+ "name": "test.from.agavepy",
+ "parameters": {"command": "gcc", "output": "testout"}}

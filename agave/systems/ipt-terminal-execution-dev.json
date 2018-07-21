@@ -1,0 +1,43 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "129.114.17.73",
+    "port": 22,
+    "rootDir":"/data/ipt/jobs/terminals",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "root",
+      "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqEc9MsDtK+aYa+39MWCJ1d1RvZY1z0RQUzyh5m6ScusO4vz7eU2GMJzwyDNBqScGQuAe0myrc3vEt3EFOTGff4z3PwNQ41sCWG1PDmlgHE0vHZTOgOJFCMdtBEsm+sMmZoQyn0Sr6jVBF1OS3r/fpuqJ8SI/O2ft/P17j9Ldz5w3KdhYxZ6Gf3IfG/0TkLU0Svx8EQlt2dCa1UUEejq6j5JT3svID4FJr36A5fiZctb6293IsWjNhPoJmcBuyHXY0bNIdn7BsPogWApZ5gEwashRDE2QKGfFteNjiBTFjkjRzYwCUYg+GZ+TeZR+pz9hL77HOsd7cbfMLgbMrN1p1 kulisics@linux-zhbh.suse\n",
+      "privateKey": ""
+    }
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "dev.ipt.terminal.execute",
+  "name": "IPT execution system for running IPT terminals -- DEV",
+  "status": "UP",
+  "description": "IPT execution system for running IPT terminals -- DEV.",
+  "site": "ipt.tacc.utexas.edu",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "129.114.17.73",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "root",
+      "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqEc9MsDtK+aYa+39MWCJ1d1RvZY1z0RQUzyh5m6ScusO4vz7eU2GMJzwyDNBqScGQuAe0myrc3vEt3EFOTGff4z3PwNQ41sCWG1PDmlgHE0vHZTOgOJFCMdtBEsm+sMmZoQyn0Sr6jVBF1OS3r/fpuqJ8SI/O2ft/P17j9Ldz5w3KdhYxZ6Gf3IfG/0TkLU0Svx8EQlt2dCa1UUEejq6j5JT3svID4FJr36A5fiZctb6293IsWjNhPoJmcBuyHXY0bNIdn7BsPogWApZ5gEwashRDE2QKGfFteNjiBTFjkjRzYwCUYg+GZ+TeZR+pz9hL77HOsd7cbfMLgbMrN1p1 kulisics@linux-zhbh.suse\n",
+      "privateKey": ""
+    }
+  }
+}

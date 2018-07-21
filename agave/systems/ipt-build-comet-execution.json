@@ -1,0 +1,47 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "comet.sdsc.edu",
+    "port": 22,
+    "rootDir":"/",
+    "homeDir" : "/oasis/scratch/comet/ipt_icat/temp_project",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "ipt_icat",
+      "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbb3N4yrfKc6Shcx/MIa2nmfvhmjP/B5prgLHwPW5t8nqc+0sSJaW6o6wIenQjCkzY4SOx6ls3bs8UtNyBn/ZLm1FXhQQBp1oCGv6L9I9nUTf9+HPwKUaGctC7+DlI5puh0a2tUozvq8dIVh9T0MMCad1lWqNMXTzAJI2cIwky4KJTCFU6v82ehaeldLYcW83WfRxvkyVpgzWGAasX7JO1cHPq5nFJq6FtS+qffwZohU4QpPPB/BevZK0DYil5gpzVvTHjJV1exRGJAosEomIRho5ulIenNGSGqO20dVUJwf3wnFFoGVRLNKkSFn2Q9JPV83AsLcXoVh4eh1oLac2H\n",
+      "privateKey": ""
+    }
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "ipt.build.comet",
+  "name": "IPT Build Execution - Comet",
+  "status": "UP",
+  "description": "Comet-based execution system for compiling IPT-generated source codes.",
+  "site": "ipt.tacc.utexas.edu",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "comet.sdsc.edu",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "rootDir":"/",
+    "scratchDir": "/oasis/scratch/comet/ipt_icat/temp_project",
+    "homeDir" : "/home/ipt_icat",
+    "auth": {
+        "username":"ipt_icat",
+        "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbb3N4yrfKc6Shcx/MIa2nmfvhmjP/B5prgLHwPW5t8nqc+0sSJaW6o6wIenQjCkzY4SOx6ls3bs8UtNyBn/ZLm1FXhQQBp1oCGv6L9I9nUTf9+HPwKUaGctC7+DlI5puh0a2tUozvq8dIVh9T0MMCad1lWqNMXTzAJI2cIwky4KJTCFU6v82ehaeldLYcW83WfRxvkyVpgzWGAasX7JO1cHPq5nFJq6FtS+qffwZohU4QpPPB/BevZK0DYil5gpzVvTHjJV1exRGJAosEomIRho5ulIenNGSGqO20dVUJwf3wnFFoGVRLNKkSFn2Q9JPV83AsLcXoVh4eh1oLac2H\n",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+    }
+  }
+}

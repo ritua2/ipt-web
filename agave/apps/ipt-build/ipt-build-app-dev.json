@@ -23,9 +23,9 @@
   "inputs": [
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
-        "argument": "main IPT generated source file."
+        "label": "main IPT generated source file."
       },
       "semantics": {
         "ontology": [],
@@ -123,7 +123,7 @@
       "semantics": {
         "minCardinality": 0,
         "ontology": [],
-        "maxCardinality": 1
+        "maxCardinality": -1
       },
       "value": {
         "visible": true,

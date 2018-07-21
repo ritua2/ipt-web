@@ -1,0 +1,47 @@
+
+---
+
+nginx:
+    image: nginx
+    volumes:
+        - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+        - ./docker/nginx/ssl/ipt-web.tacc.utexas.edu.bundle.crt:/etc/ssl/ipt-web/ipt-web.tacc.utexas.edu.bundle.crt
+        - ./docker/nginx/ssl/ipt-web.tacc.utexas.edu.key:/etc/ssl/ipt-web/ipt-web.tacc.utexas.edu.key
+        - ./docker/nginx/ssl/ipt_tacc_cloud_bundle.cer:/etc/ssl/ipt-web/ipt_tacc_cloud_bundle.cer
+        - ./docker/nginx/ssl/ipt_tacc_cloud_key.pem:/etc/ssl/ipt-web/ipt_tacc_cloud_key.pem
+    ports:
+        - "80:80"
+        - "443:443"
+    volumes_from:
+      - django
+    links:
+      - django:django
+
+django:
+    stdin_open: true
+    tty: true
+    # image: jstubbs/ipt-web
+    # hostname: ipt-web.tacc.utexas.edu
+    build: .
+    ports:
+        - "8000:8000"
+    extra_hosts:
+        - "ipt-web.tacc.utexas.edu:172.17.0.1"
+    volumes:
+        - ./iptweb:/iptweb
+    environment:
+        "IPT_INSTANCE": "dev"
+        "AGAVE_CLIENT_KEY": ""
+        "AGAVE_CLIENT_SECRET": ""
+        "AGAVE_BASE_URL": "https://api.tacc.utexas.edu"
+        "AGAVE_SERVICE_TOKEN": ""
+        "ACTOR_ID": "NV7v3WyJlbLAj"
+        "ALLOWED_HOSTS": "ipt.tacc.cloud.local"
+        "TAS_CLIENT_KEY": "tas-ipt"
+        "TAS_CLIENT_SECRET": ""
+        "TAS_URL": "https://tas-dev.tacc.utexas.edu/api-test"
+        "NORECAPTCHA_SITE_KEY": ""
+        "NORECAPTCHA_SECRET_KEY": ""
+        "AGAVE_STORAGE_SYSTEM_ID": ""
+        "DJANGO_DEBUG": "True"
+    command: python manage.py runserver 0.0.0.0:8000

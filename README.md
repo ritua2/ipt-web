@@ -35,7 +35,7 @@ environment, as these values are not stored in the repository for security reaso
 5. Modify your hosts file to point at the local stack by adding the following entry:
 
   ```
-  127.0.0.1 ipt-web.tacc.utexas.edu
+  127.0.0.1 ipt.tacc.cloud
   ```
 
 6. Run the stack using the docker-compose file by issuing the following command in the project root:
@@ -44,7 +44,7 @@ environment, as these values are not stored in the repository for security reaso
    $ docker-compose up -d
    ```
 
-Navigate to https://ipt-web.tacc.utexas.edu to interact with your development stack.
+Navigate to https://ipt.tacc.cloud to interact with your development stack.
 
 
 ### Building the Images ###
@@ -78,9 +78,11 @@ The actor must also be re-registered with the Abaco API. To re-register the acto
 values in the default environment; the SSH KEY is stored in a stache entry called "ipt-actor"):
 
   ```
-  >>> ag.actors.delete(actorId=current_actor_id)
-  >>> body = {'default_environment': {'execution_ip': '129.114.17.73', 'execution_ssh_key': '..', ipt_instance': 'dev'}, 'image': 'jstubbs/ipt-actor', 'name': 'IPT-dev-actor'}
-  >>> ag.actors.add(body=body)
+  from agavepy.agave import Agave
+  ag = Agave(api_server='https://api.tacc.utexas.edu', token=<agave_service_token>)
+  ag.actors.delete(actorId=current_actor_id)
+  body = {'default_environment': {'execution_ip': '129.114.17.73', 'execution_ssh_key': '..', ipt_instance': 'dev'}, 'image': 'jstubbs/ipt-actor', 'name': 'IPT-dev-actor'}
+  ag.actors.add(body=body)
   ```
 
 The Abaco API returns a new uuid for the actor. Update the docker-compose.yml file ACTOR_ID variable with this new uuid.
@@ -133,11 +135,11 @@ To set the metadata so that your development stack renders the terminal, use the
 and the TerminalMetadata model defined in the iptsite models like so:
 
   ```
-  >>> from agavepy.agave import Agave
-  >>> ag = Agave(api_server='https://api.tacc.utexas.edu', token='<your_token>')
-  >>> from models import TerminalMetadata
-  >>> t = TerminalMetadata('<your_username>', ag)
-  >>> t.set_ready('https://ipt-web.tacc.utexas.edu:<your_port>')
+  from agavepy.agave import Agave
+  ag = Agave(api_server='https://api.tacc.utexas.edu', token='<your_token>')
+  from models import TerminalMetadata
+  t = TerminalMetadata('<your_username>', ag)
+  t.set_ready('https://ipt-web.tacc.utexas.edu:<your_port>')
   ```
 
 ### Agave Systems ###
@@ -149,11 +151,35 @@ in the ~/agave/systems directory:
   * ipt-cloud-storage-dev.json
   * ipt-terminal-execution-dev.json
 
+and the SSH private key in the stache entry ipt-web-credentials
+
 Use a command such as:
 
   ```
-  >>> requests.post('https://api.tacc.utexas.edu/systems/v2', files={'fileToUpload': open('ipt-cloud-storage-dev.json')}, headers=headers)
+  requests.post('https://api.tacc.utexas.edu/systems/v2', files={'fileToUpload': open('ipt-cloud-storage-dev.json')}, headers=headers)
   ```
+or, equivalently, with agavepy:
+
+   ```
+
+   s = json.load(open('/home/jstubbs/bitbucket-repos/ipt-web/agave/systems/ipt-build-execution-dev.json', 'r'))
+   ag_ipt.systems.update(systemId='dev.ipt.build.execute', body=s)
+
+   ```
 
 Both hosts must be Docker hosts with the root directories created.
+
+### File Uploads ###
+File uploads are managed via an Agave storage system to the compute IP and a mount to corral.
+The id of the storage system can be configured by setting the environment variable `AGAVE_STORAGE_SYSTEM_ID` but by
+default it uses the value `dev.ipt.cloud.storage`. This storage system has a root directory value equal to the root
+of the corral mount on the compute host which should have value: `/gpfs/corral3/repl/utexas/ipt_storage/`.
+
+Note that, even when running/developing IPT locally, file uploads will go to the configured storage system.
+
+To recreate this mount in case of a failure on the compute node, see the Compute Host section of the IPT on the Web
+Operations document: https://confluence.tacc.utexas.edu/display/CIC/IPT+on+the+Web+-+Operations
+
+
+
  

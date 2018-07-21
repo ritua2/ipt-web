@@ -1,0 +1,43 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "data.tacc.utexas.edu",
+    "port": 22,
+    "rootDir":"/data/ipt/jobs",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "centos",
+      "publicKey": "issh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCZz+6Nqq+WNrfjkRGZfap8GVh0xFtuLwmRs5V9zboUfg2Fl2KHlnHdZh/LB5ZLCLq/il7jNQbeTGU2HlOrqZYvbj9oQlFjAXZR9+jjsxqU6KW/IfE1iMHxnw9xiui3CyVVu0DZSOYpFDdeup3OuQI1Mjl+VnJyHcGdMHKN7uzu4JtXSmX69HYqyvjlUhANBMu6XO9G8lG+aboMLzt1hLYZz178bw29JNjOwQgS/KWhw41NU7WORMJl1o5kUNMzwgSf8QyYBFIxI5cEqaivCzNLLoyLK273trTd8x0F7a2Q/ZYfyhNhIW9945TkCnTfjEzCP4Pi70Ek1Ep7s/iH4dZwlhiyy2GusNBBbGhHYnaYHMsvKzcV+FaEWGvOo/9TssjnMdY9TfFwZIf6NIgEqB+wjIdGsl/V1cQX/fT0IjgpkkIg5kwQhxa6ed/uzHTG8shERdRrFf2ckhSeOVYWFLOykXT/4qq6P+/UxLvFBYIQpm9eFTz5tO8DmPzr277IUYAw2iO77E4eQ0q3+K9a3RUnp5BQoHseOdg70epesBkWMLLGsVIJB9qt5rDdmuezOc3TUOGi+Msn/4JN5UNKwcNjBvWUrX8i+LKtatQ4Vu/1a9beXFj2EU39wWzSwC92zFQjGkBpfeYbnevcJGfSwf5Xt80hf6rL66JQgNGkoKhn0w== jstubbs@jstubbs-XPS-15-9530\n",
+      "privateKey":""
+    }
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "ipt.stampede.execution",
+  "name": "IPT Execution System - Stampede",
+  "status": "UP",
+  "description": "Stampede-based execution system for compiling IPT-generated source codes.",
+  "site": "ipt.tacc.cloud",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "login4.stampede2.tacc.utexas.edu",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "centos",
+      "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCZz+6Nqq+WNrfjkRGZfap8GVh0xFtuLwmRs5V9zboUfg2Fl2KHlnHdZh/LB5ZLCLq/il7jNQbeTGU2HlOrqZYvbj9oQlFjAXZR9+jjsxqU6KW/IfE1iMHxnw9xiui3CyVVu0DZSOYpFDdeup3OuQI1Mjl+VnJyHcGdMHKN7uzu4JtXSmX69HYqyvjlUhANBMu6XO9G8lG+aboMLzt1hLYZz178bw29JNjOwQgS/KWhw41NU7WORMJl1o5kUNMzwgSf8QyYBFIxI5cEqaivCzNLLoyLK273trTd8x0F7a2Q/ZYfyhNhIW9945TkCnTfjEzCP4Pi70Ek1Ep7s/iH4dZwlhiyy2GusNBBbGhHYnaYHMsvKzcV+FaEWGvOo/9TssjnMdY9TfFwZIf6NIgEqB+wjIdGsl/V1cQX/fT0IjgpkkIg5kwQhxa6ed/uzHTG8shERdRrFf2ckhSeOVYWFLOykXT/4qq6P+/UxLvFBYIQpm9eFTz5tO8DmPzr277IUYAw2iO77E4eQ0q3+K9a3RUnp5BQoHseOdg70epesBkWMLLGsVIJB9qt5rDdmuezOc3TUOGi+Msn/4JN5UNKwcNjBvWUrX8i+LKtatQ4Vu/1a9beXFj2EU39wWzSwC92zFQjGkBpfeYbnevcJGfSwf5Xt80hf6rL66JQgNGkoKhn0w== jstubbs@jstubbs-XPS-15-9530\n",
+      "privateKey": ""
+    }
+  }
+}

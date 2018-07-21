@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block body %}
+
+<h2 class="text-center">Comment</h2>
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+{{ form.as_p }}<br/>
+<input type="submit" value="Submit">
+<input type="reset" value="Reset">
+<!--<a href="{% url 'history' %}">Cancel</a>-->
+<input class="button" type="button" onclick='window.location.replace("{% url 'history' %}")' value="Cancel" />
+</form>
+
+<!--<table>
+  <tr>
+    <td>Title</td>
+    <td>{{b.title}}</td>
+  </tr>
+  <tr>
+    <td>Body</td>
+    <td>{{b.body}}</td>
+  </tr>
+  <tr>
+    <td>Slug</td>
+    <td>{{b.slug}}</td>
+  </tr>
+</table>-->
+{% endblock %}
+
+

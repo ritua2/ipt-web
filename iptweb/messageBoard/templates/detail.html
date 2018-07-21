@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block body %}
+
+<h2 class="text-center">IPT Discussion Forum</h2>
+<h6 class="text-center"><a href="{% url 'newforum' %}">Enter a new comment in this forum</a></h6>
+<br/>
+<div class="container">
+<table class="table">
+  <tr>
+    <th>Title</th>
+    <th>content</th>
+    <th>Tag</th>
+    <th>Posted</th>
+    <th>Reply</th>
+    <!--<th width="8%">Modified on</th>-->
+  </tr>
+{% for b in forum %}
+  <tr>
+    <td>{{b.title}}</td>
+    <td>{{b.body}}</td>
+    <td>{{b.tag}}</td>
+    <td>{{b.created}}</td>
+    <td><a href="{% url 'replyforum'  pk=b.id %}">Reply</a></td>
+    </tr>
+    {% for r in b.commentParentEntry.all %}
+	<tr>
+    	<td>RE: {{ r.parentEntry.title }}</td>
+    	<td>{{ r.comment }}</td>
+    	<td>{{ r.parentEntry.tag }}</td>
+    	<td>{{ r.created }}</td>
+    	<td><a href="{% url 'replycomment' pk=b.id cpk=r.id%}">Reply to comment</a></td>
+	</tr>
+    {% endfor %}
+    <!--<td>{{b.modified}}</td>-->
+{% endfor %}
+</table><br/><br/>
+</div>
+{% endblock %}

@@ -1,15 +1,18 @@
-
 ---
 
 nginx:
     image: nginx
     volumes:
         - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-        - ./docker/nginx/ssl/ipt-web.tacc.utexas.edu.bundle.crt:/etc/ssl/ipt-web/ipt-web.tacc.utexas.edu.bundle.crt
-        - ./docker/nginx/ssl/ipt-web.tacc.utexas.edu.key:/etc/ssl/ipt-web/ipt-web.tacc.utexas.edu.key
+        - ./docker/nginx/ssl/ipt_tacc_cloud_bundle.cer:/etc/ssl/ipt-web/ipt_tacc_cloud_bundle.cer
+        - ./docker/nginx/ssl/ipt_tacc_cloud_key.pem:/etc/ssl/ipt-web/ipt_tacc_cloud_key.pem
     ports:
-        - "4080:80"
+        - "80:80"
         - "443:443"
+    volumes_from:
+      - django
+    links:
+      - django:django
 
 django:
     image: jstubbs/ipt-web
@@ -18,11 +21,22 @@ django:
         - "8000:8000"
     extra_hosts:
         - "ipt-web.tacc.utexas.edu:172.17.0.1"
+    volumes:
+        - ./iptweb:/iptweb
+        - /iptweb/static/
     environment:
         "IPT_INSTANCE": "dev"
         "AGAVE_CLIENT_KEY": "_6ofb8FswesLLarCOfXkVk1suUga"
-        "AGAVE_CLIENT_SECRET":
+        "AGAVE_CLIENT_SECRET": ""
         "AGAVE_BASE_URL": "https://api.tacc.utexas.edu"
-        "AGAVE_SERVICE_TOKEN":
-        "ACTOR_ID": "bde9c71e-9118-11e7-9e6c-0242ac110005-059"
-
+        "AGAVE_SERVICE_TOKEN": ""
+        "ACTOR_ID": "JNxxr8m4lAwMo"
+        "TAS_CLIENT_KEY": "tas-ipt"
+        "TAS_CLIENT_SECRET": ""
+        "TAS_URL": "https://tas.tacc.utexas.edu/api"
+        "STAMPEDE_BUILD_APP_VERSION": "ipt-build-stampede-0.1.0"
+        "LS5_BUILD_APP_VERSION": "ipt-build-ls5-0.1.0"
+        "STAMPEDE_RUN_APP_VERSION": "ipt-run-stampede-0.1.0"
+        "LS5_RUN_APP_VERSION": "ipt-run-ls5-0.1.0"
+        "NORECAPTCHA_SITE_KEY": ""
+        "NORECAPTCHA_SECRET_KEY": ""

@@ -1,12 +1,12 @@
 {
   "version": "0.1.0",
-  "helpURI": "ipt.tacc.utexas.edu",
+  "helpURI": "https://ipt.tacc.utexas.edu",
   "label": "Compile IPT output",
   "defaultNodeCount": 1,
   "defaultMaxRunTime": "01:00:00",
   "shortDescription": "Compile IPT generated source code.",
   "longDescription": "Compile IPT generated source code.",
-  "executionSystem": "docker.tacc.utexas.edu",
+  "executionSystem": "ipt.build.stampede",
   "executionType": "CLI",
   "parallelism": "SERIAL",
   "deploymentPath": "apps/ipt-build",
@@ -23,9 +23,9 @@
   "inputs": [
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
-        "argument": "main IPT generated source file."
+        "label": "main IPT generated source file."
       },
       "semantics": {
         "ontology": [],
@@ -34,13 +34,14 @@
       },
       "value": {
         "visible": true,
-        "required": true
+        "required": true,
+        "default": "agave://dev.ipt.cloud.storage//data/test.txt"
       },
       "id": "driver"
     },
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
         "label": "Any additional files required for compilation."
       },
@@ -59,7 +60,7 @@
   "parameters": [
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
         "label": "The compiler command"
       },
@@ -78,7 +79,7 @@
     },
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
         "label": "file name to generate from compilation"
       },
@@ -97,7 +98,7 @@
     },
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
         "label": "additional arg string to pass to the compiler"
       },
@@ -115,14 +116,14 @@
     },
     {
       "details": {
-        "showArgument": true,
+        "showArgument": false,
         "repeatArgument": false,
         "label": "string of modules to load"
       },
       "semantics": {
         "minCardinality": 0,
         "ontology": [],
-        "maxCardinality": 1
+        "maxCardinality": -1
       },
       "value": {
         "visible": true,
@@ -133,5 +134,5 @@
     }
   ],
   "checkpointable": false,
-  "name": "ipt-build"
+  "name": "ipt-build-stampede"
 }

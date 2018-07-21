@@ -1,0 +1,48 @@
+{
+  "type": "EXECUTION",
+  "storage": {
+    "protocol": "SFTP",
+    "proxyTunnel": "NO",
+    "host": "ls5.tacc.utexas.edu",
+    "port": 22,
+    "rootDir":"/",
+    "homeDir" : "/work/04868/ipt_icat/ls5",
+    "auth": {
+      "type": "SSHKEYS",
+      "username": "ipt_icat",
+      "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0vjplmDKwKiMmk6zob+ZEG1JOgjzxIc5fylKy5TjfKhoPMEBcZ6Vn6++QKYYqsKOSSwoTIfjw5avvdS2h4mX8sAvVLC3MpANPU3IsH71fStT7t76hiuXaI/SUe2k4ByWvQ8g0XGooJRFvIPCtFK4GxAI4gcDkcmkFbmp/AX6izWmfmGS5x7u8zKxLg7ocP2LMZRBYmOyIs7OO7HXMtlrzbUCdyW66E9HNqZ1+DUAJXVlxj8HwdxkDxvLeoOfPElJYuHo9nM00Yvg7ErYaBgtz/bhh/e/DOlKMTnGSukM5ckq8PKv7N2UghfMDnMwKFWmvi0r+bl/2mucecwpP5J87 ipt_icat@staff",
+      "privateKey": ""
+    }
+  },
+  "queues": [
+    {
+      "default": true,
+      "name": "default",
+      "maxNodes": -1,
+      "maxJobs": 100
+    }
+  ],
+  "id": "ipt.build.ls5",
+  "name": "IPT Build Execution - LS5",
+  "status": "UP",
+  "description": "Lonestar5-based execution system for compiling IPT-generated source codes.",
+  "site": "ipt.tacc.utexas.edu",
+  "executionType": "CLI",
+  "scheduler": "FORK",
+  "login": {
+    "host": "ls5.tacc.utexas.edu",
+    "port": 22,
+    "protocol": "SSH",
+    "proxyTunnel": "NO",
+    "rootDir":"/",
+    "scratchDir": "/scratch/04868/ipt_icat",
+    "workDir": "/home1/04868/ipt_icat/ls5/",
+    "homeDir" : "/work/04868/ipt_icat/ls5",
+    "auth": {
+        "username":"ipt_icat",
+        "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0vjplmDKwKiMmk6zob+ZEG1JOgjzxIc5fylKy5TjfKhoPMEBcZ6Vn6++QKYYqsKOSSwoTIfjw5avvdS2h4mX8sAvVLC3MpANPU3IsH71fStT7t76hiuXaI/SUe2k4ByWvQ8g0XGooJRFvIPCtFK4GxAI4gcDkcmkFbmp/AX6izWmfmGS5x7u8zKxLg7ocP2LMZRBYmOyIs7OO7HXMtlrzbUCdyW66E9HNqZ1+DUAJXVlxj8HwdxkDxvLeoOfPElJYuHo9nM00Yvg7ErYaBgtz/bhh/e/DOlKMTnGSukM5ckq8PKv7N2UghfMDnMwKFWmvi0r+bl/2mucecwpP5J87 ipt_icat@staff",
+        "privateKey": "",
+        "type" : "SSHKEYS"
+    }
+  }
+}

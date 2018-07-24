@@ -301,7 +301,7 @@ def history(request):
     if request.method == 'GET':
         try:
             jobs = ag.jobs.list()
-            context = {"jobs": jobs, "admin": is_admin(user_name)}
+            context = {"jobs": jobs, "admin": is_admin(user_name), "loggedinusername": user_name}
             return render(request, 'iptsite/history.html', context, content_type='text/html')
         except Exception as e:
             # raise e
@@ -321,6 +321,7 @@ def run(request):
     context = {
         "admin": is_admin(user_name),
         "systems": SYSTEMS,
+        "loggedinusername": user_name
     }
 
     if request.method == 'POST':
@@ -449,7 +450,7 @@ def help(request):
     This view generates the Help page.
     """
     user_name = request.session.get("username")
-    context = {"admin": is_admin(user_name)}
+    context = {"admin": is_admin(user_name), "loggedinusername": user_name}
     if request.method == 'GET':
         return render(request, 'iptsite/help.html', context, content_type='text/html')
 
@@ -569,7 +570,8 @@ def compile(request):
     user_name = request.session.get("username")
     context = {
         "admin": is_admin(user_name),
-        "systems": SYSTEMS
+        "systems": SYSTEMS,
+        "loggedinusername": user_name
     }
 
     if request.method == 'POST':
@@ -681,7 +683,8 @@ def terminal(request):
     if not check_for_tokens(request):
         return redirect(reverse("login"))
     user_name = request.session.get("username")
-    context = {"admin": is_admin(user_name)}
+    context = {"admin": is_admin(user_name),
+               "loggedinusername": user_name}
     # if request.method == 'POST':
     #     f = request.FILES['fileToUpload']
     #     ag = get_service_client()
@@ -894,9 +897,9 @@ def uploadView(request):
                 f.name=sp[-1]
                 folderNames='/'.join(sp[0:len(sp)-1])
                 #filePath='/{}/{}'.format(user_name,folderNames)
-                ag.files.manage(systemId=AGAVE_STORAGE_SYSTEM_ID, 
-                                filePath='/{}'.format(user_name), 
-                                body={'action': 'mkdir', 
+                ag.files.manage(systemId=AGAVE_STORAGE_SYSTEM_ID,
+                                filePath='/{}'.format(user_name),
+                                body={'action': 'mkdir',
                                 'path': '/{}'.format(folderNames)})
                 rsp = ag.files.importData(systemId=AGAVE_STORAGE_SYSTEM_ID,
                                                filePath='/{}/{}'.format(user_name,folderNames),
@@ -907,6 +910,3 @@ def uploadView(request):
             logger.error(msg)
             return JsonResponse({'msg': msg}, status=500)
         return JsonResponse({'msg': 'Your file structure has been queued for upload and will be available momentarily.'})
-		
-		
-

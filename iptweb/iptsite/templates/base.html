@@ -35,19 +35,20 @@
   <div class="main-banner">
     <p><img src="{% static 'images/IPT-Banner.jpg' %}" class="img-responsive" alt="IPT Banner"></p>
   </div>
-
   <!--Tabs-->
   <div class="container">
     <ul class="nav nav-tabs">
-        <li id='terminal-tab'><a href="{% url 'terminal' %}">Terminal</a></li>
-        <li id='compile-tab'><a href="{% url 'compile' %}">Compile</a></li>
-        <li id='run-tab'><a href="{% url 'run' %}">Run</a></li>
-        <li id='history-tab'><a href="{% url 'history' %}">Job History</a></li>
-        <li id='help-tab'><a href="{% url 'help' %}">Help</a></li>
-        <li id='community-tab'><a href="/community/blog/">Community</a></li>
-      {% if admin %}
-        <li id='admin-tab'><a href="{% url 'admin' %}">Admin</a></li>
+      {% if loggedinusername %}
+          <li id='terminal-tab'><a href="{% url 'terminal' %}">Terminal</a></li>
+          <li id='compile-tab'><a href="{% url 'compile' %}">Compile</a></li>
+          <li id='run-tab'><a href="{% url 'run' %}">Run</a></li>
+          <li id='history-tab'><a href="{% url 'history' %}">Job History</a></li>
+        {% if admin %}
+          <li id='admin-tab'><a href="{% url 'admin' %}">Admin</a></li>
+        {% endif %}
       {% endif %}
+      <li id='community-tab'><a href="/community/blog/">Community</a></li>
+      <li id='help-tab'><a href="{% url 'help' %}">Help</a></li>
     </ul>
   <!-- End Tabs -->
 

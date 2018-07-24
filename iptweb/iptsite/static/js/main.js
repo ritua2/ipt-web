@@ -18,6 +18,9 @@ $(function() {
     case '/admin':
         $('#admin-tab').addClass('active')
         break;
+    case '/community/blog/':
+        $('#community-tab').addClass('active')
+        break;
   }
 });
 

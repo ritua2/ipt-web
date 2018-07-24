@@ -8,21 +8,32 @@ from .models import *
 from django.views.generic.edit import UpdateView, DeleteView, CreateView
 from .forms import *
 from django.core.urlresolvers import reverse
+from django.conf import settings
 # Create your views here.
 
-def history(request):
+def is_admin(user_name):
+    return user_name in settings.ADMIN_USERS
+
+def commentHistory(request):
     """
     This view generates the Job history page.
     """
+    user_name = request.session.get("username")
+    
     if request.method == 'GET':
         p = Entry.objects.all()
-        return render(request, 'detail.html', {'forum': p})
+        context = {
+            "admin": is_admin(user_name),
+            "loggedinusername": user_name,
+            'forum': p
+        }
+        return render(request, 'detail.html', context)
 
 class NewPost(CreateView):
     form_class = EntryForm
     model = Entry
     template_name = 'customForm.html/'
-    
+
     def get_success_url(self):
         print("hi")
         return reverse('history')
@@ -54,9 +65,8 @@ class ReplytoReply(CreateView):
         form = self.form_class(request.POST)
         if form.is_valid():
            rep = form.save(commit=False)
-	   print(rep.comment)
-           rep.comment ='Replied to:"'+ Reply.objects.get(pk=cpk).comment+'"......'+rep.comment
-           rep.parentEntry = Entry.objects.get(pk=pk)
-           rep.save()
-           return HttpResponseRedirect('/community/blog/')
-
+	print(rep.comment)
+        rep.comment ='Replied to:"'+ Reply.objects.get(pk=cpk).comment+'"......'+rep.comment
+        rep.parentEntry = Entry.objects.get(pk=pk)
+        rep.save()
+        return HttpResponseRedirect('/community/blog/')

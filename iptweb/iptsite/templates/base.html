@@ -43,12 +43,12 @@
           <li id='compile-tab'><a href="{% url 'compile' %}">Compile</a></li>
           <li id='run-tab'><a href="{% url 'run' %}">Run</a></li>
           <li id='history-tab'><a href="{% url 'history' %}">Job History</a></li>
-          <li id='help-tab'><a href="{% url 'help' %}">Help</a></li>
-          <li id='community-tab'><a href="/community/blog/">Community</a></li>
         {% if admin %}
           <li id='admin-tab'><a href="{% url 'admin' %}">Admin</a></li>
         {% endif %}
       {% endif %}
+      <li id='community-tab'><a href="/community/blog/">Community</a></li>
+      <li id='help-tab'><a href="{% url 'help' %}">Help</a></li>
     </ul>
   <!-- End Tabs -->
 

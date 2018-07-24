@@ -286,7 +286,9 @@ def admin(request):
                               'submit': submit})
     return render(request, 'iptsite/admin.html',
                   context={'admin': True,
-                           'terminals': terminals},
+                           'terminals': terminals,
+                           "loggedinusername": user_name
+                           },
                   content_type='text/html')
 
 def history(request):

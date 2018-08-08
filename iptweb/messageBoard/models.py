@@ -38,3 +38,20 @@ class Reply(models.Model):
     class Meta:
 	verbose_name_plural = "Forum Replies"
 	ordering = ["-created"]
+
+class Newscollection(models.Model):
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    author = models.CharField(max_length=50,null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    objects = EntryQuerySet.as_manager()
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "News Entry"
+        verbose_name_plural = "News Entries"
+        ordering = ["-created"]

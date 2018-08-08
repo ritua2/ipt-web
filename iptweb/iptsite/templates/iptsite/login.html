@@ -1,78 +1,94 @@
 <!-- User Login page -->
-{% extends 'base.html' %}
-
-{% load staticfiles %}
-
-{% block body %}
+{% extends 'base.html' %} {% load staticfiles %} {% block body %}
 
 <div class="row">
-    <div class="col-sm-6 col-sm-offset-3">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3>
-                    <center>Welcome to IPT</center>
-                </h3>
+  <div class="col-sm-3">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>
+                    <center>Sign In to IPT</center>
+                </h4>
+      </div>
+      <div class="panel-body">
+        <form class="form-horizontal" method="POST" action="/login">{% csrf_token %}
+          <fieldset>
+
+            <div class="form-group">
+              <label for="username" class="col-lg-2 control-label"></label>
+
+              <div class="col-lg-8">
+                <input type="username" class="form-control" id="username" placeholder="Enter Username" name="username">
+              </div>
             </div>
-            <div class="panel-body">
-                <form class="form-horizontal" method="POST" action="/login">{% csrf_token %}
-                    <fieldset>
-                        <legend>Sign In to IPT</legend>
-                        <div class="form-group">
-                            <label for="username" class="col-lg-2 control-label"></label>
+            <!-- Original -->
+            <div class="form-group">
+              <label for="password" class="col-lg-2 control-label"></label>
 
-                            <div class="col-lg-8">
-                                <input type="username" class="form-control" id="username" placeholder="Enter Username"
-                                       name="username">
-                            </div>
-                        </div>
-                        <!-- Original -->
-                        <div class="form-group">
-                            <label for="password" class="col-lg-2 control-label"></label>
-
-                            <div class="col-lg-8">
-                                <input type="password" class="form-control" id="password" placeholder="Enter Password"
-                                       name="password">
-                            </div>
-                        </div>
-                        <!-- Sign In Button -->
-                        <div class="form-group">
-                            <div class="col-lg-8 col-lg-offset-2">
-                                <div class="card--buttons">
-                                    <button type="submit" id="signin-btn" data-behavior="submitForm"
-                                            name="AccountSignIn" class="btn btn-primary btn-lg btn-block">
+              <div class="col-lg-8">
+                <input type="password" class="form-control" id="password" placeholder="Enter Password" name="password">
+              </div>
+            </div>
+            <!-- Sign In Button -->
+            <div class="form-group">
+              <div class="col-lg-8 col-lg-offset-2">
+                <div class="card--buttons">
+                  <button type="submit" id="signin-btn" data-behavior="submitForm" name="AccountSignIn" class="btn btn-primary btn-lg btn-block">
                                         Sign In
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Error Handling -->
-                        {% if error %}
-                        <div class="error">
-                            <p>There was an error: {{ error }}</p>
-                        </div>
-                        {% endif %}
-                        {% if access_token %}
-                        <div>
-                            <p>Access Token: {{ access_token }}</p>
+                </div>
+              </div>
+            </div>
+            <!-- Error Handling -->
+            {% if error %}
+            <div class="error">
+              <p>There was an error: {{ error }}</p>
+            </div>
+            {% endif %} {% if access_token %}
+            <div>
+              <p>Access Token: {{ access_token }}</p>
 
-                            <p>Refresh Token: {{ refresh_token }}</p>
-                        </div>
-                        {% endif %}
-                        <!-- Password Reset -->
-                        <div>
-                            <div id="gam-forgot-password" class="card--message col-lg-8 col-lg-offset-3">
-                                Forgot your password? <a href="{% url 'accounts:password_reset' %}" id="recoverPassword"
-                                                         class="link link-grayDarkest link-underline"
-                                                         alt="Reset password">Click here</a>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
-                <a href="{% url 'accounts:register' %}">
+              <p>Refresh Token: {{ refresh_token }}</p>
+            </div>
+            {% endif %}
+            <!-- Password Reset -->
+            <div>
+              <div id="gam-forgot-password" class="card--message col-lg-9 col-lg-offset-2">
+                <a href="{% url 'accounts:password_reset' %}" id="recoverPassword" class="link link-grayDarkest link-underline" alt="Reset password">Forgot password?</a>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <a href="{% url 'accounts:register' %}">
                     <button class="btn btn-primary btn-lg btn-block"> Create Account </button>
                 </a>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
+  <!--    <div class="col-sm-6">
+
+      <tr>
+        <td>News1</td>
+        <td>Hi this is the first news of IPT WEB</td>
+        <td>Author1</td>
+      </tr>
+    </div>
+</div> -->
+
+  <div class="col-sm-3 col-sm-offset-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+                <center>News</center>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <ul>
+          {% for n in news %}
+          <li><b>{{n.title}}-</b>{{n.body}}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock %}
+  {% endblock %}

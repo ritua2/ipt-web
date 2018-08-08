@@ -8,4 +8,6 @@ urlpatterns = [
     url(r'addreply/(?P<pk>[0-9]+)/$', ReplyPost.as_view(), name='replyforum'),
     url(r'quotereply/(?P<pk>[0-9]+)/(?P<cpk>[0-9]+)/$', ReplytoReply.as_view(), name='replycomment'),
     url(r'newdetail/$', NewPost.as_view(), name='newforum'),
+    url(r'removecomment/(?P<pk>[0-9]+)/$', DeleteComment.as_view(), name='deletecomment'),
+    url(r'removereply/(?P<pk>[0-9]+)/$', DeleteReply.as_view(), name='deletereply'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

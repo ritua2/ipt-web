@@ -23,6 +23,10 @@ from zipfile import ZipFile
 import StringIO
 import shutil
 import json
+from messageBoard.models import Newscollection
+from django.views.generic.edit import DeleteView, CreateView
+from .forms import NewsForm
+
 
 AGAVE_STORAGE_SYSTEM_ID = os.environ.get('AGAVE_STORAGE_SYSTEM_ID', 'dev.ipt.cloud.storage')
 
@@ -455,13 +459,22 @@ def help(request):
     context = {"admin": is_admin(user_name), "loggedinusername": user_name}
     if request.method == 'GET':
         return render(request, 'iptsite/help.html', context, content_type='text/html')
+#Added by Thomas Hilton Johnson III, for quick refernece if there is a bug
+#def news(request):
+#    """
+#    This view generates the news page.
+#    """
+#    user_name = request.session.get("username")
+#    context = {"admin": is_admin(user_name), "loggedinusername": user_name}
+#    if request.method == 'GET':
+#        return render(request, 'iptsite/news.html', context, content_type='text/html')
 
 
-# @check_for_tokens
 def login(request):
     """
     This view generates the User Login page.
     """
+    n = Newscollection.objects.all()
     # check if user already has a valid auth session just redirect them to terminal page
     if check_for_tokens(request):
         return redirect(reverse("terminal"))
@@ -471,18 +484,21 @@ def login(request):
         password = request.POST.get('password')
 
         if not username:
-            context = {"error": "Username cannot be blank"}
+            context = {"error": "Username cannot be blank",
+                        'news': n }
             return render(request, 'iptsite/login.html', context, content_type='text/html')
 
         if not password:
-            context = {"error": "Password cannot be blank"}
+            context = {"error": "Password cannot be blank",
+                        'news': n }
             return render(request, 'iptsite/login.html', context, content_type='text/html')
 
         try:
             ag = get_agave_client(username, password)
         except Exception as e:
             # render login template with an error
-            context = {"error": "Invalid username or password: {}".format(e)}
+            context = {"error": "Invalid username or password: {}".format(e),
+                        'news': n }
             return render(request, 'iptsite/login.html', context, content_type='text/html')
 
         try:
@@ -511,9 +527,9 @@ def login(request):
         return redirect(reverse("terminal"))
 
     elif request.method == 'GET':
-        return render(request, 'iptsite/login.html', content_type='text/html')
+        return render(request, 'iptsite/login.html', { 'news': n }, content_type='text/html')
 
-    return render(request, 'iptsite/login.html', content_type='text/html')
+    return render(request, 'iptsite/login.html', { 'news': n }, content_type='text/html')
 
 
 def logout(request):
@@ -912,3 +928,32 @@ def uploadView(request):
             logger.error(msg)
             return JsonResponse({'msg': msg}, status=500)
         return JsonResponse({'msg': 'Your file structure has been queued for upload and will be available momentarily.'})
+
+def newsHistory(request):
+    """
+    This view generates the news history page.
+    """
+    user_name = request.session.get("username")
+
+    if request.method == 'GET':
+        n = Newscollection.objects.all()
+        context = {
+            "admin": is_admin(user_name),
+            "loggedinusername": user_name,
+            'news': n
+        }
+        return render(request, 'iptsite/newshistory.html', context)
+
+class AddNews(CreateView):
+    form_class = NewsForm
+    model = Newscollection
+    template_name = 'iptsite/newsForm.html'
+
+    def get_success_url(self):
+        return reverse('newsHistory')
+
+class DeleteNews(DeleteView):
+    model = Newscollection
+
+    def get_success_url(self):
+        return reverse('newsHistory')

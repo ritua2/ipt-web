@@ -12,4 +12,3 @@ class ReplyForm(ModelForm):
     class Meta:
         model = Reply
         exclude = ('parentEntry',)
-

@@ -2,6 +2,8 @@
 
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
+from django.forms.models import ModelForm
+from messageBoard.models import Newscollection
 
 # If you don't do this you cannot use Bootstrap CSS
 class LoginForm(AuthenticationForm):
@@ -13,3 +15,8 @@ class LoginForm(AuthenticationForm):
 class UploadFileForm(forms.Form):
     title = forms.CharField(max_length=50)
     file = forms.FileField()
+
+class NewsForm(ModelForm):
+    class Meta:
+        model = Newscollection
+        exclude = ('',)

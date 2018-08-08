@@ -1,41 +1,61 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load staticfiles %} {% block body %}
 
-{% load staticfiles %}
 
-{% block body %}
-
-<h2 class="text-center">IPT Discussion Forum</h2>
-<h6 class="text-center"><a href="{% url 'newforum' %}">Enter a new comment in this forum</a></h6>
-<br/>
+<h2 class="text-center">IPT Discussion Forum</h2> {% if loggedinusername %}
+<h6 class="text-center"><a href="{% url 'newforum' %}">Enter a new comment in this forum</a></h6><br/> {% endif %}
 <div class="container">
-<table class="table">
-  <tr>
-    <th>Title</th>
-    <th>content</th>
-    <th>Tag</th>
-    <th>Posted</th>
-    <th>Reply</th>
-    <!--<th width="8%">Modified on</th>-->
-  </tr>
-{% for b in forum %}
-  <tr>
-    <td>{{b.title}}</td>
-    <td>{{b.body}}</td>
-    <td>{{b.tag}}</td>
-    <td>{{b.created}}</td>
-    <td><a href="{% url 'replyforum'  pk=b.id %}">Reply</a></td>
+  <table class="table">
+    <tr>
+      <th>Title</th>
+      <th>content</th>
+      <th>Tag</th>
+      <th>Posted</th>
+
+      {% if loggedinusername %}
+      <th>Reply</th>
+      {% endif %}
+      <!--<th width="8%">Modified on</th>-->
+    </tr>
+    {% for b in forum %}
+    <tr>
+      <td>{{b.title}}</td>
+      <td>{{b.body}}</td>
+      <td>{{b.tag}}</td>
+      <td>{{b.created}}</td>
+      {% if loggedinusername %}
+      <td><a href="{% url 'replyforum'  pk=b.id %}">Reply</a></td>
+      {% if admin %}
+      <td>
+        <!--<div class ="col-lg-1"> -->
+        <form method="POST" action="{% url 'deletecomment'  pk=b.id %}">
+          {% csrf_token %}<input type="submit"  onclick="return confirm('Are you sure you want to Delete comment and all its replies?');" value="Delete comment">
+        </form>
+
+        <!--</div>-->
+      </td>
+      {% endif %} {% endif %}
     </tr>
     {% for r in b.commentParentEntry.all %}
-	<tr>
-    	<td>RE: {{ r.parentEntry.title }}</td>
-    	<td>{{ r.comment }}</td>
-    	<td>{{ r.parentEntry.tag }}</td>
-    	<td>{{ r.created }}</td>
-    	<td><a href="{% url 'replycomment' pk=b.id cpk=r.id%}">Reply to comment</a></td>
-	</tr>
+    <tr>
+      <td>RE: {{ r.parentEntry.title }}</td>
+      <td>{{ r.comment }}</td>
+      <td>{{ r.parentEntry.tag }}</td>
+      <td>{{ r.created }}</td>
+      {% if loggedinusername %}
+      <td><a href="{% url 'replycomment' pk=b.id cpk=r.id%}">Reply to comment</a></td>
+      {% if admin %}
+      <!--<div class ="col-lg-1"> -->
+      <td>
+        <form method="POST" action="{% url 'deletereply'  pk=r.id %}">
+          {% csrf_token %}<input type="submit"  onclick="return confirm('Are you sure you want to Delete this reply?');"  value="Delete Reply">
+        </form>
+        <!--</div>-->
+      </td>
+      {% endif %} {% endif %}
+    </tr>
     {% endfor %}
     <!--<td>{{b.modified}}</td>-->
-{% endfor %}
-</table><br/><br/>
+    {% endfor %}
+  </table><br/><br/>
 </div>
 {% endblock %}

@@ -19,7 +19,7 @@ def commentHistory(request):
     This view generates the Job history page.
     """
     user_name = request.session.get("username")
-    
+
     if request.method == 'GET':
         p = Entry.objects.all()
         context = {
@@ -35,8 +35,7 @@ class NewPost(CreateView):
     template_name = 'customForm.html/'
 
     def get_success_url(self):
-        print("hi")
-        return reverse('history')
+        return reverse('commentHistory')
 
 class ReplyPost(CreateView):
     form_class = ReplyForm
@@ -70,3 +69,15 @@ class ReplytoReply(CreateView):
         rep.parentEntry = Entry.objects.get(pk=pk)
         rep.save()
         return HttpResponseRedirect('/community/blog/')
+
+class DeleteComment(DeleteView):
+    model = Entry
+
+    def get_success_url(self):
+        return reverse('commentHistory')
+
+class DeleteReply(DeleteView):
+    model = Reply
+
+    def get_success_url(self):
+        return reverse('commentHistory')

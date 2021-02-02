@@ -1,5 +1,5 @@
 
-# IPT on the Web #
+# IPT on the Web - NOT IN USE - CONTENT ONLY FOR REFERENCE TO OLD PROJECT DELIVERABLES# 
 
 This is the main repository for assets related to IPT on the Web: a web-accessible version of the Interactive Parallelization Tool (IPT).
 For more information about the IPT command line tool, see the literature (e.g. https://www.tacc.utexas.edu/documents/13601/1028648/paper_xsede_formatted.pdf). The IPT project is funded by the National Science Foundation Award #1642396.
